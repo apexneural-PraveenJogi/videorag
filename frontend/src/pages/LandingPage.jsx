@@ -180,43 +180,6 @@ export default function LandingPage() {
           </motion.div>
         </section>
 
-        {/* demo strip */}
-        <section className="py-16 sm:py-24">
-          <Reveal>
-            <div className="overflow-hidden rounded-2xl border border-ink-600 bg-ink-800">
-              <div className="flex items-center gap-2 border-b border-ink-600 px-5 py-3 font-mono text-xs text-mist-500">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
-                <span className="ml-2">quarterly-review.mp4</span>
-              </div>
-              <div className="space-y-4 p-6">
-                <div className="flex justify-end">
-                  <div className="rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-ink-900">
-                    When does she talk about the Q3 budget?
-                  </div>
-                </div>
-                <div className="flex justify-start">
-                  <div className="max-w-lg rounded-2xl bg-ink-700 px-4 py-3 text-sm leading-relaxed text-mist-100 ring-1 ring-ink-500">
-                    She brings up the Q3 budget at{' '}
-                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-amber-400">2:14</span>
-                    , flagging a 12% increase in cloud spend before moving to headcount at{' '}
-                    <span className="rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-amber-400">3:05</span>.
-                    <div className="mt-3 flex gap-2">
-                      <div className="relative h-14 w-24 overflow-hidden rounded-md border border-amber-500/40 bg-gradient-to-br from-emerald-400 to-teal-600">
-                        <span className="absolute bottom-0.5 right-0.5 rounded bg-ink-900/80 px-1 font-mono text-[9px] text-mist-300">2:14</span>
-                      </div>
-                      <div className="relative h-14 w-24 overflow-hidden rounded-md border border-ink-500 bg-gradient-to-br from-sky-400 to-indigo-600">
-                        <span className="absolute bottom-0.5 right-0.5 rounded bg-ink-900/80 px-1 font-mono text-[9px] text-mist-300">3:05</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
         {/* footer CTA */}
         <section className="py-16 sm:py-24">
           <Reveal>
