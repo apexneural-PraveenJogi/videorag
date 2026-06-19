@@ -73,6 +73,6 @@ docker compose up --build                # http://localhost:8080
 
 ## Credits
 
-The looping clip in the landing hero (`frontend/public/hero.mp4`) is *Big Buck
-Bunny* © Blender Foundation, [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
-(peach.blender.org). Swap it for any MP4 by replacing that file.
+The looping clip in the landing hero (`frontend/public/hero.mp4`) is a free
+sample from [test-videos.co.uk](https://test-videos.co.uk/). Swap it for any
+MP4 by replacing that file — the hero waveform/timecode adapt to its length.
