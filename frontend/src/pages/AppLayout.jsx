@@ -7,8 +7,8 @@ export default function AppLayout() {
   const inVideo = pathname.includes('/app/video/')
 
   return (
-    <div className="flex h-full flex-col bg-slate-50 text-slate-900">
-      <header className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-5 py-3 text-mist-100">
+    <div className="flex h-full flex-col bg-ink-900 text-mist-100">
+      <header className="flex items-center justify-between border-b border-ink-700 bg-ink-800/60 px-5 py-3 text-mist-100 backdrop-blur">
         <Link to="/app" className="flex items-center gap-2">
           <Logo className="h-7 w-7" />
           <span className="font-display text-lg font-semibold tracking-tight">

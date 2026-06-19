@@ -42,10 +42,11 @@ export default function UploadPage() {
     <div className="h-full overflow-y-auto scroll-slim">
       <div className="mx-auto max-w-3xl px-6 py-12">
         <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold tracking-tight text-slate-900">
+          <p className="font-mono text-xs uppercase tracking-eyebrow text-amber-500">New video</p>
+          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-mist-100">
             Upload a video
           </h1>
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-mist-300">
             We’ll extract keyframes and transcribe the audio, then you can ask
             anything about it.
           </p>
@@ -55,15 +56,15 @@ export default function UploadPage() {
 
         {uploading && (
           <div className="mt-6">
-            <div className="mb-1 flex justify-between text-sm text-slate-500">
+            <div className="mb-1 flex justify-between font-mono text-sm text-mist-300">
               <span className="truncate">{filename}</span>
               <span>
                 {progress < 100 ? `Uploading ${progress}%` : 'Starting processing…'}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+            <div className="h-2 overflow-hidden rounded-full bg-ink-700">
               <div
-                className="h-full rounded-full bg-brand-600 transition-all"
+                className="h-full rounded-full bg-amber-500 transition-all"
                 style={{ width: `${progress}%` }}
               />
             </div>

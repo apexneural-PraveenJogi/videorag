@@ -9,13 +9,13 @@ function ProcessingView({ status }) {
   const progress = status?.progress ?? 0
   return (
     <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center px-6 text-center">
-      <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-brand-600" />
-      <h2 className="text-lg font-semibold text-slate-800">Processing video…</h2>
-      <p className="mt-1 text-sm text-slate-500">{status?.stage || 'Working'}</p>
-      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-200">
-        <div className="h-full rounded-full bg-brand-600 transition-all" style={{ width: `${progress}%` }} />
+      <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-ink-600 border-t-amber-500" />
+      <h2 className="font-display text-lg font-semibold text-mist-100">Processing video…</h2>
+      <p className="mt-1 font-mono text-sm text-amber-500">{status?.stage || 'Working'}</p>
+      <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-ink-700">
+        <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${progress}%` }} />
       </div>
-      <p className="mt-2 text-xs text-slate-400">{progress}%</p>
+      <p className="mt-2 font-mono text-xs text-mist-500">{progress}%</p>
     </div>
   )
 }
@@ -23,9 +23,9 @@ function ProcessingView({ status }) {
 function FailedView({ status }) {
   return (
     <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center px-6 text-center">
-      <h2 className="text-lg font-semibold text-red-600">Processing failed</h2>
-      <p className="mt-2 text-sm text-slate-500 break-words">{status?.error || 'Unknown error.'}</p>
-      <Link to="/app" className="mt-4 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+      <h2 className="font-display text-lg font-semibold text-red-400">Processing failed</h2>
+      <p className="mt-2 text-sm text-mist-300 break-words">{status?.error || 'Unknown error.'}</p>
+      <Link to="/app" className="mt-4 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-amber-400">
         Upload another video
       </Link>
     </div>
@@ -55,14 +55,14 @@ export default function VideoPage() {
 
   if (error && !status) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-red-600">
+      <div className="flex h-full items-center justify-center text-sm text-red-400">
         {error}
       </div>
     )
   }
   if (!status) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+      <div className="flex h-full items-center justify-center font-mono text-sm text-mist-500">
         Loading…
       </div>
     )
@@ -73,7 +73,7 @@ export default function VideoPage() {
   return (
     <div className="grid h-full grid-cols-1 lg:grid-cols-[1.4fr_1fr]">
       {/* Left: player + keyframes */}
-      <div className="flex min-h-0 flex-col border-r border-slate-200 bg-slate-900">
+      <div className="flex min-h-0 flex-col border-r border-ink-700 bg-ink-900">
         <div className="flex min-h-0 flex-1 items-center justify-center p-3">
           <video
             ref={videoRef}

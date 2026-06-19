@@ -4,10 +4,10 @@ import { useToast } from './Toast.jsx'
 import { formatTimestamp } from '../utils/formatTimestamp'
 
 const STATUS_STYLES = {
-  ready: 'bg-emerald-100 text-emerald-700',
-  processing: 'bg-amber-500/20 text-amber-600',
-  queued: 'bg-slate-100 text-slate-600',
-  failed: 'bg-red-100 text-red-700',
+  ready: 'bg-emerald-500/15 text-emerald-300',
+  processing: 'bg-amber-500/15 text-amber-400',
+  queued: 'bg-ink-600 text-mist-300',
+  failed: 'bg-red-500/15 text-red-300',
 }
 
 export default function VideoLibrary({ videos, onChange }) {
@@ -27,16 +27,16 @@ export default function VideoLibrary({ videos, onChange }) {
   }
 
   if (videos === null) {
-    return <p className="mt-10 text-sm text-slate-400">Loading your videos…</p>
+    return <p className="mt-10 font-mono text-sm text-mist-500">Loading your videos…</p>
   }
 
   return (
     <section className="mt-12">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <h2 className="mb-3 font-mono text-xs uppercase tracking-eyebrow text-mist-500">
         Your videos
       </h2>
       {videos.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-ink-500 bg-ink-800/40 px-4 py-8 text-center text-sm text-mist-500">
           Nothing here yet. Upload a video to get started.
         </p>
       ) : (
@@ -45,11 +45,11 @@ export default function VideoLibrary({ videos, onChange }) {
             <li key={v.video_id}>
               <Link
                 to={`/app/video/${v.video_id}`}
-                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition hover:border-brand-400 hover:shadow-sm"
+                className="flex items-center justify-between gap-3 rounded-xl border border-ink-600 bg-ink-800 px-4 py-3 transition hover:border-amber-500/40 hover:bg-ink-700"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium text-slate-800">{v.filename}</p>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="truncate font-medium text-mist-100">{v.filename}</p>
+                  <p className="mt-0.5 font-mono text-xs text-mist-500">
                     {v.status === 'ready'
                       ? `${v.frame_count} frames · ${formatTimestamp(v.duration)}`
                       : v.stage || v.status}
@@ -57,7 +57,7 @@ export default function VideoLibrary({ videos, onChange }) {
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`rounded-full px-2 py-0.5 font-mono text-xs font-medium ${
                       STATUS_STYLES[v.status] || STATUS_STYLES.queued
                     }`}
                   >
@@ -67,7 +67,7 @@ export default function VideoLibrary({ videos, onChange }) {
                     type="button"
                     onClick={(e) => remove(e, v)}
                     title="Delete video"
-                    className="rounded-md p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                    className="rounded-md p-1.5 text-mist-500 transition hover:bg-red-500/15 hover:text-red-300"
                   >
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <path d="M3 6h18 M8 6V4h8v2 M19 6l-1 14H6L5 6" />

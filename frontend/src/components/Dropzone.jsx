@@ -37,17 +37,17 @@ export default function Dropzone({ onFile, disabled }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={`flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-8 py-16 transition
-          ${dragging ? 'border-brand-500 bg-brand-50' : 'border-slate-300 bg-white hover:border-brand-400 hover:bg-slate-50'}
+          ${dragging ? 'border-amber-500 bg-amber-500/10' : 'border-ink-500 bg-ink-800/60 hover:border-amber-500/60 hover:bg-ink-700/60'}
           ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
       >
-        <svg viewBox="0 0 24 24" className="h-10 w-10 text-brand-500" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg viewBox="0 0 24 24" className="h-10 w-10 text-amber-500" fill="none" stroke="currentColor" strokeWidth="1.5">
           <path d="M12 16V4m0 0 4 4m-4-4L8 8" strokeLinecap="round" strokeLinejoin="round" />
           <path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" strokeLinecap="round" />
         </svg>
-        <span className="text-base font-medium text-slate-700">
-          Drop a video here, or <span className="text-brand-600">browse</span>
+        <span className="text-base font-medium text-mist-100">
+          Drop a video here, or <span className="text-amber-500">browse</span>
         </span>
-        <span className="text-sm text-slate-400">
+        <span className="font-mono text-sm text-mist-500">
           MP4, MOV, WebM, MKV, AVI · up to {MAX_VIDEO_SIZE_MB} MB
         </span>
         <input
@@ -62,7 +62,7 @@ export default function Dropzone({ onFile, disabled }) {
           }}
         />
       </button>
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
     </div>
   )
 }
