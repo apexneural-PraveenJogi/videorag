@@ -93,8 +93,8 @@ export default function LandingPage() {
         </nav>
 
         {/* hero */}
-        <header className="py-12 sm:py-16">
-          <motion.div variants={heroBox} initial="hidden" animate="show" className="mx-auto max-w-3xl text-center">
+        <header className="grid items-center gap-10 py-12 sm:py-20 lg:grid-cols-2 lg:gap-12">
+          <motion.div variants={heroBox} initial="hidden" animate="show">
             <motion.p variants={heroItem} className="font-mono text-xs uppercase tracking-eyebrow text-amber-500">
               Ask your videos
             </motion.p>
@@ -111,12 +111,12 @@ export default function LandingPage() {
               </span>
               .
             </motion.h1>
-            <motion.p variants={heroItem} className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-mist-300">
+            <motion.p variants={heroItem} className="mt-6 max-w-md text-lg leading-relaxed text-mist-300">
               Upload a video and ask in plain language. VideoRAG watches the frames
               and reads the transcript, then answers with the exact timestamps —
               click to jump straight there.
             </motion.p>
-            <motion.div variants={heroItem} className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <motion.div variants={heroItem} className="mt-8 flex flex-wrap items-center gap-4">
               <MagneticButton
                 to="/app"
                 className="group relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-amber-500 px-6 py-3 font-semibold text-ink-900 shadow-[0_0_28px_rgba(245,196,81,0.3)] transition hover:bg-amber-400"
@@ -134,7 +134,6 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 40, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-14"
           >
             <HeroDemo />
           </motion.div>

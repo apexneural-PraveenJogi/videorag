@@ -127,9 +127,9 @@ export default function HeroDemo() {
         <span className="ml-auto hidden sm:inline">vision · gpt-4o</span>
       </div>
 
-      <div className="grid lg:grid-cols-[1.5fr_1fr]">
+      <div>
         {/* video */}
-        <div className="relative aspect-video lg:aspect-auto lg:min-h-[440px]">
+        <div className="relative aspect-video">
           {videoOk ? (
             <video
               ref={videoRef}
@@ -191,7 +191,7 @@ export default function HeroDemo() {
         </div>
 
         {/* chat */}
-        <div className="flex min-h-[300px] flex-col border-t border-ink-600 lg:min-h-0 lg:border-l lg:border-t-0">
+        <div className="flex h-72 flex-col border-t border-ink-600">
           <div className="flex items-center gap-2 border-b border-ink-600 px-4 py-2.5 font-display text-sm font-semibold text-mist-100">
             <span className="h-2 w-2 rounded-full bg-amber-500" />
             Ask this video
