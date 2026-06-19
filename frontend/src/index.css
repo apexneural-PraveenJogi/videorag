@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-ink-900 font-sans text-mist-100 antialiased;
+}
+
+/* Amber selection to match the projector-light accent. */
+::selection {
+  background: #f5c451;
+  color: #0b0e14;
+}
+
+/* Thin dark scrollbars inside app panels. */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3242 transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

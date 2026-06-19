@@ -1,0 +1,96 @@
+"""ChromaDB persistence: one collection per video, explicit embeddings.
+
+Following the PRD's text-grounding approach, both transcript chunks and frames are
+indexed as text + a precomputed embedding. Frames are described by the transcript
+that overlaps their timestamp window so visual moments are retrievable by language.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from functools import lru_cache
+
+import chromadb
+
+from app.config import get_settings
+from app.services.embedder import embed_texts, embed_query
+
+
+@dataclass
+class RetrievedItem:
+    id: str
+    type: str  # "frame" | "transcript"
+    text: str
+    timestamp: float
+    end: float
+    frame_path: str  # "" for transcript items
+    distance: float
+
+
+@lru_cache
+def _client() -> chromadb.ClientAPI:
+    settings = get_settings()
+    return chromadb.PersistentClient(path=settings.chroma_persist_dir)
+
+
+def _collection_name(video_id: str) -> str:
+    return f"video_{video_id.replace('-', '')}"
+
+
+def reset_video(video_id: str) -> None:
+    """Drop any existing collection for this video (idempotent re-index)."""
+    try:
+        _client().delete_collection(_collection_name(video_id))
+    except Exception:
+        pass
+
+
+def _collection(video_id: str):
+    return _client().get_or_create_collection(
+        name=_collection_name(video_id), metadata={"hnsw:space": "cosine"}
+    )
+
+
+def index_items(
+    video_id: str,
+    ids: list[str],
+    texts: list[str],
+    metadatas: list[dict],
+) -> int:
+    """Embed and upsert items for a video. Returns number of items written."""
+    if not ids:
+        return 0
+    embeddings = embed_texts(texts)
+    col = _collection(video_id)
+    col.upsert(ids=ids, documents=texts, embeddings=embeddings, metadatas=metadatas)
+    return len(ids)
+
+
+def query(video_id: str, question: str, top_k: int = 5) -> list[RetrievedItem]:
+    col = _collection(video_id)
+    if col.count() == 0:
+        return []
+    q_emb = embed_query(question)
+    res = col.query(
+        query_embeddings=[q_emb],
+        n_results=min(top_k, col.count()),
+        include=["documents", "metadatas", "distances"],
+    )
+    items: list[RetrievedItem] = []
+    ids = res.get("ids", [[]])[0]
+    docs = res.get("documents", [[]])[0]
+    metas = res.get("metadatas", [[]])[0]
+    dists = res.get("distances", [[]])[0]
+    for i, _id in enumerate(ids):
+        meta = metas[i] or {}
+        items.append(
+            RetrievedItem(
+                id=_id,
+                type=meta.get("type", "transcript"),
+                text=docs[i] or "",
+                timestamp=float(meta.get("timestamp", 0.0)),
+                end=float(meta.get("end", meta.get("timestamp", 0.0))),
+                frame_path=meta.get("frame_path", "") or "",
+                distance=float(dists[i]) if dists else 0.0,
+            )
+        )
+    return items
