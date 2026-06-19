@@ -70,3 +70,9 @@ docker compose up --build                # http://localhost:8080
 | POST | `/api/v1/query/stream` | Same, streamed as SSE |
 | GET | `/api/v1/models` | Vision models offered in the UI |
 | GET | `/api/v1/health` | Health + config flags |
+
+## Credits
+
+The looping clip in the landing hero (`frontend/public/hero.mp4`) is *Big Buck
+Bunny* © Blender Foundation, [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+(peach.blender.org). Swap it for any MP4 by replacing that file.
