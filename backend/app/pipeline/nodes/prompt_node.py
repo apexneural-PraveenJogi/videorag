@@ -40,7 +40,7 @@ def prompt_node(state: RAGState) -> RAGState:
     retrieved: list[RetrievedItem] = state.get("retrieved", [])
 
     transcript_items = [r for r in retrieved if r.type == "transcript"]
-    frame_items = [r for r in retrieved if r.type == "frame"]
+    frame_items = sorted((r for r in retrieved if r.type == "frame"), key=lambda r: r.timestamp)
 
     context_lines = [f"[{format_timestamp(r.timestamp)}] {r.text}" for r in transcript_items if r.text]
     transcript_block = "\n".join(context_lines) if context_lines else "(no transcript available)"
