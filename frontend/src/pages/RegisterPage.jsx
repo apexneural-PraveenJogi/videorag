@@ -27,6 +27,10 @@ export default function RegisterPage() {
       setError('Password must be at least 8 characters.')
       return
     }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      setError('Password must contain at least one letter and one digit.')
+      return
+    }
     if (password !== confirm) {
       setError('Passwords do not match.')
       return
@@ -87,7 +91,7 @@ export default function RegisterPage() {
               placeholder="••••••••"
               className="rounded-lg border border-ink-600 bg-ink-800 px-3 py-2 text-mist-100 placeholder:text-mist-500 focus:border-amber-500/50 focus:outline-none"
             />
-            <span className="text-xs text-mist-500">At least 8 characters.</span>
+            <span className="text-xs text-mist-500">At least 8 characters, with a letter and a number.</span>
           </label>
 
           <label className="flex flex-col gap-1.5">

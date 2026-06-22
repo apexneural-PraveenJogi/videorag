@@ -22,8 +22,8 @@ export default function LoginPage() {
       setError('Enter a valid email address.')
       return
     }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
+    if (!password) {
+      setError('Enter your password.')
       return
     }
 
