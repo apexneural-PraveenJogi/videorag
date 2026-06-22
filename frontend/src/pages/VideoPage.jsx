@@ -10,7 +10,7 @@ function ProcessingView({ status }) {
   return (
     <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center px-6 text-center">
       <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-ink-600 border-t-amber-500" />
-      <h2 className="font-display text-lg font-semibold text-mist-100">Processing video…</h2>
+      <h2 className="font-display text-xl font-bold uppercase tracking-tight text-mist-100">Reading the footage</h2>
       <p className="mt-1 font-mono text-sm text-amber-500">{status?.stage || 'Working'}</p>
       <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-ink-700">
         <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${progress}%` }} />
@@ -23,7 +23,7 @@ function ProcessingView({ status }) {
 function FailedView({ status }) {
   return (
     <div className="mx-auto flex h-full max-w-md flex-col items-center justify-center px-6 text-center">
-      <h2 className="font-display text-lg font-semibold text-red-400">Processing failed</h2>
+      <h2 className="font-display text-xl font-bold uppercase tracking-tight text-red-400">Processing failed</h2>
       <p className="mt-2 text-sm text-mist-300 break-words">{status?.error || 'Unknown error.'}</p>
       <Link to="/app" className="mt-4 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-amber-400">
         Upload another video

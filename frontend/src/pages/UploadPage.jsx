@@ -43,12 +43,12 @@ export default function UploadPage() {
       <div className="mx-auto max-w-3xl px-6 py-12">
         <div className="mb-8">
           <p className="font-mono text-xs uppercase tracking-eyebrow text-amber-500">New video</p>
-          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-mist-100">
-            Upload a video
+          <h1 className="mt-4 font-display text-display-lg font-black uppercase text-mist-100">
+            Bring in footage
           </h1>
-          <p className="mt-2 text-mist-300">
-            We’ll extract keyframes and transcribe the audio, then you can ask
-            anything about it.
+          <p className="mt-3 text-mist-300">
+            We pull the keyframes and transcribe the audio, then you can ask
+            anything about it — and land on the exact moment.
           </p>
         </div>
 

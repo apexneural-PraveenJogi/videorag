@@ -70,7 +70,7 @@ export default function ChatPanel({ videoId, onSeek }) {
   return (
     <div className="flex h-full flex-col bg-ink-900">
       <div className="flex items-center justify-between border-b border-ink-700 bg-ink-800/60 px-4 py-2.5 backdrop-blur">
-        <h2 className="flex items-center gap-2 font-display text-sm font-semibold text-mist-100">
+        <h2 className="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wide text-mist-100">
           <span className="h-2 w-2 rounded-full bg-amber-500" />
           Ask this video
         </h2>

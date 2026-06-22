@@ -20,7 +20,7 @@ export default function AppLayout() {
       <header className="flex items-center justify-between border-b border-ink-700 bg-ink-800/60 px-5 py-3 text-mist-100 backdrop-blur">
         <Link to="/app" className="flex items-center gap-2">
           <Logo className="h-7 w-7" />
-          <span className="font-display text-lg font-semibold tracking-tight">
+          <span className="font-display text-lg font-extrabold tracking-tight">
             Video<span className="text-amber-500">RAG</span>
           </span>
         </Link>
