@@ -26,7 +26,7 @@ def _headers() -> dict:
         "Authorization": f"Bearer {settings.openrouter_api_key}",
         "Content-Type": "application/json",
         # Optional attribution headers recommended by OpenRouter.
-        "HTTP-Referer": "http://localhost:5173",
+        "HTTP-Referer": settings.public_base_url,
         "X-Title": "Video RAG",
     }
 
@@ -35,23 +35,37 @@ def _chat_url() -> str:
     return get_settings().openrouter_base_url.rstrip("/") + "/chat/completions"
 
 
+def _is_transient(exc: Exception) -> bool:
+    if isinstance(exc, httpx.TransportError):
+        return True
+    if isinstance(exc, httpx.HTTPStatusError):
+        return exc.response.status_code >= 500
+    return False
+
+
 def generate_node(state: RAGState) -> RAGState:
     settings = get_settings()
     model = state.get("model") or settings.default_vision_model
     payload = {"model": model, "messages": state["messages"], "stream": False}
-    try:
-        resp = httpx.post(_chat_url(), headers=_headers(), json=payload, timeout=120.0)
-        resp.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        raise GenerationError(
-            f"OpenRouter request failed ({exc.response.status_code}): {exc.response.text[:300]}"
-        ) from exc
-    except httpx.HTTPError as exc:
-        raise GenerationError(f"OpenRouter request error: {exc}") from exc
 
-    data = resp.json()
-    answer = data["choices"][0]["message"]["content"]
-    return {"answer": answer}
+    last_exc: Exception | None = None
+    for attempt in range(2):  # one retry on transient failure
+        try:
+            resp = httpx.post(_chat_url(), headers=_headers(), json=payload, timeout=120.0)
+            resp.raise_for_status()
+            data = resp.json()
+            return {"answer": data["choices"][0]["message"]["content"]}
+        except httpx.HTTPStatusError as exc:
+            last_exc = exc
+            if not _is_transient(exc) or attempt == 1:
+                raise GenerationError(
+                    f"OpenRouter request failed ({exc.response.status_code}): {exc.response.text[:300]}"
+                ) from exc
+        except httpx.HTTPError as exc:
+            last_exc = exc
+            if not _is_transient(exc) or attempt == 1:
+                raise GenerationError(f"OpenRouter request error: {exc}") from exc
+    raise GenerationError(f"OpenRouter request error: {last_exc}")
 
 
 def stream_answer(messages: list[dict], model: str) -> Iterator[str]:
