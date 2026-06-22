@@ -33,6 +33,10 @@ class Settings(BaseSettings):
     max_video_size_mb: int = 500
     # Max number of heavy ingest jobs (frame extraction + whisper) running at once.
     ingest_concurrency: int = 2
+    # Parallel workers for per-frame work within one ingest (S3 uploads + vision
+    # captions). Long videos have hundreds of frames; serial calls make the
+    # "Indexing" step look frozen, so we fan these out.
+    ingest_parallelism: int = 8
 
     # --- Storage / vector store ---
     storage_dir: str = "./storage"  # local temp scratch for ingest only

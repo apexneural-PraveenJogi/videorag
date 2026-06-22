@@ -67,15 +67,32 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
             logger.warning("ingest[%s] transcription skipped: %s", video_id, exc)
         logger.info("ingest[%s] transcribed %d segments in %.1fs", video_id, len(segments), time.perf_counter() - t0)
 
-        video_repo.update_video(video_id, progress=60, stage="Uploading frames")
-        # Upload frames to S3; metadata carries the S3 key (not a local path).
-        frame_keys: list[str] = []
-        for fr in frames:
+        n = len(frames)
+        workers = max(1, min(settings.ingest_parallelism, n or 1))
+
+        # Upload frames to S3 in parallel (progress 60 -> 73). Hundreds of small
+        # PUTs are slow serially; fan them out and report as they land.
+        video_repo.update_video(video_id, progress=60, stage=f"Uploading frames (0/{n})")
+        frame_keys: list[str | None] = [None] * n
+
+        def _upload(idx: int) -> None:
+            fr = frames[idx]
             key = storage.frame_key(owner_id, video_id, fr.path.name)
             storage.upload_file(fr.path, key, content_type="image/jpeg")
-            frame_keys.append(key)
+            frame_keys[idx] = key
 
-        video_repo.update_video(video_id, progress=75, stage="Indexing in vector store")
+        done = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            futs = [ex.submit(_upload, i) for i in range(n)]
+            for _ in concurrent.futures.as_completed(futs):
+                done += 1
+                if done % 10 == 0 or done == n:
+                    video_repo.update_video(
+                        video_id, progress=60 + int(13 * done / max(1, n)),
+                        stage=f"Uploading frames ({done}/{n})",
+                    )
+
+        video_repo.update_video(video_id, progress=74, stage="Indexing in vector store")
         vector_store.reset_video(video_id)
 
         ids: list[str] = []
@@ -92,25 +109,44 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
             texts.append(ch.text)
             metadatas.append({"type": "transcript", "timestamp": ch.start, "end": ch.end, "frame_path": ""})
 
+        # Caption frames in parallel (progress 75 -> 90). The vision call per
+        # transcript-less frame is the real bottleneck on long/silent videos.
         frame_window = (1.0 / settings.frame_extract_fps) if settings.frame_extract_fps else 1.0
-        for i, fr in enumerate(frames):
-            caption = _overlapping_text(fr.timestamp, fr.timestamp + frame_window, segments)
-            if not caption and settings.enable_visual_captions:
+        captions: list[str] = [""] * n
+
+        def _caption(idx: int) -> None:
+            fr = frames[idx]
+            cap = _overlapping_text(fr.timestamp, fr.timestamp + frame_window, segments)
+            if not cap and settings.enable_visual_captions:
                 try:
-                    caption = caption_frame(fr.path.read_bytes())
+                    cap = caption_frame(fr.path.read_bytes())
                 except Exception as exc:  # noqa: BLE001 — never fail ingest on a caption
                     logger.warning("ingest[%s] frame caption error at %.1fs: %s", video_id, fr.timestamp, exc)
-                    caption = ""
-            if not caption:
-                caption = f"Video keyframe at {fr.timestamp:.1f} seconds."
+                    cap = ""
+            captions[idx] = cap or f"Video keyframe at {fr.timestamp:.1f} seconds."
+
+        done = 0
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            futs = [ex.submit(_caption, i) for i in range(n)]
+            for _ in concurrent.futures.as_completed(futs):
+                done += 1
+                if done % 5 == 0 or done == n:
+                    video_repo.update_video(
+                        video_id, progress=75 + int(15 * done / max(1, n)),
+                        stage=f"Captioning frames ({done}/{n})",
+                    )
+
+        for i, fr in enumerate(frames):
             ids.append(f"f-{i}")
-            texts.append(caption)
+            texts.append(captions[i])
             metadatas.append({
                 "type": "frame", "timestamp": fr.timestamp, "end": fr.timestamp,
                 "frame_path": frame_keys[i],
             })
 
+        video_repo.update_video(video_id, progress=92, stage="Embedding & indexing")
         chunk_count = vector_store.index_items(video_id, ids, texts, metadatas)
+        video_repo.update_video(video_id, progress=98, stage="Finalizing")
 
     video_repo.update_video(
         video_id, status="ready", progress=100, stage="Ready",
