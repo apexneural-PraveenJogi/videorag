@@ -10,6 +10,27 @@ function toSeconds(label) {
     : parts[0] * 60 + parts[1]
 }
 
+// The set of timecodes (in seconds) the answer explicitly cites.
+function citedSeconds(text) {
+  const secs = new Set()
+  let m
+  TS_RE.lastIndex = 0
+  while ((m = TS_RE.exec(text)) !== null) secs.add(toSeconds(m[1]))
+  return secs
+}
+
+// Show only the frame(s) the answer actually points to: those whose timecode is
+// cited in the text. Several keyframes are sent to the model so it can choose,
+// but we surface just the relevant one(s). If nothing is cited yet, show the
+// single best candidate rather than the whole spread.
+function relevantReferences(refs, text) {
+  if (!refs?.length) return []
+  const cited = citedSeconds(text || '')
+  if (!cited.size) return refs.slice(0, 1)
+  const matched = refs.filter((r) => cited.has(Math.round(r.timestamp)))
+  return matched.length ? matched : refs.slice(0, 1)
+}
+
 function renderText(text, onSeek) {
   const out = []
   let last = 0
@@ -51,6 +72,7 @@ function TypingDots() {
 export default function MessageBubble({ message, onSeek }) {
   const isUser = message.role === 'user'
   const waiting = !isUser && message.streaming && !message.text
+  const shownRefs = isUser ? [] : relevantReferences(message.references, message.text)
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -78,9 +100,9 @@ export default function MessageBubble({ message, onSeek }) {
           )}
         </div>
 
-        {!isUser && message.references?.length > 0 && (
+        {shownRefs.length > 0 && (
           <div className="scroll-slim mt-3 flex gap-2 overflow-x-auto pb-1">
-            {message.references.map((ref, i) => (
+            {shownRefs.map((ref, i) => (
               <FrameReference key={`${ref.frame_path}-${i}`} reference={ref} onSeek={onSeek} />
             ))}
           </div>
