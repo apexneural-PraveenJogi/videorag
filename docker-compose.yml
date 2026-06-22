@@ -1,44 +1,39 @@
-# VideoRAG full stack. Set OPENROUTER_API_KEY in your shell (or a .env file next
-# to this compose file), then: docker compose up --build
 services:
-  backend:
-    build: ./backend
+  db:
+    image: postgres:16-alpine
     environment:
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      DEFAULT_VISION_MODEL: ${DEFAULT_VISION_MODEL:-openai/gpt-4o-mini}
-      # OpenRouter serves /embeddings, so the same key is reused (leave
-      # EMBEDDING_API_KEY blank → falls back to OPENROUTER_API_KEY).
-      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-https://openrouter.ai/api/v1}
-      EMBEDDING_API_KEY: ${EMBEDDING_API_KEY:-}
-      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
-      WHISPER_MODEL: ${WHISPER_MODEL:-base}
-      CORS_ORIGINS: http://localhost:8080
+      POSTGRES_USER: videorag
+      POSTGRES_PASSWORD: videorag
+      POSTGRES_DB: videorag
     volumes:
-      - videorag_data:/data
-    expose:
-      - "8000"
-    restart: unless-stopped
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request,sys; urllib.request.urlopen('http://localhost:8000/api/v1/health'); "]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: ["CMD-SHELL", "pg_isready -U videorag"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
-  frontend:
-    build: ./frontend
+  api:
+    build: ./backend
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://videorag:videorag@db:5432/videorag
+      CHROMA_PERSIST_DIR: /data/chroma_db
+    volumes:
+      - chroma:/data/chroma_db
     depends_on:
-      backend:
+      db:
         condition: service_healthy
     ports:
+      - "8000:8000"
+
+  web:
+    build: ./frontend
+    depends_on:
+      - api
+    ports:
       - "8080:80"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/ || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
 volumes:
-  videorag_data:
+  pgdata:
+  chroma:
