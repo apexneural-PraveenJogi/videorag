@@ -60,7 +60,10 @@ app.include_router(query_api.router, prefix=settings.api_prefix)
 
 @app.on_event("startup")
 def _startup() -> None:
-    """Create DB tables and the chat-history table when the DB is configured."""
+    """Validate config, then create DB tables / chat-history table."""
+    from app.config_validation import validate_production_config
+    validate_production_config(settings)  # raises in prod on unsafe config
+
     if not settings.db_configured:
         logger.warning("DATABASE_URL not set — auth/persistence disabled until configured.")
         return
