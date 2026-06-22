@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # --- OpenRouter / LLM ---
     openrouter_api_key: str = ""
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    default_vision_model: str = "openai/gpt-4o-mini"
+    default_vision_model: str = "google/gemini-3.5-flash"
 
     # --- Embeddings ---
     # OpenRouter key is reused for embeddings per project decision. Because OpenRouter
@@ -61,6 +61,10 @@ class Settings(BaseSettings):
     # an OpenAI-scale embedding model.
     retrieval_min_score: float = 0.20  # cosine similarity floor (1 - distance)
     top_k_max: int = 20
+    # Always include this many top keyframes in the prompt (regardless of the
+    # score floor) so the vision model has enough images to find a specific
+    # moment the user asks for (e.g. "the frame where they smile").
+    frame_top_k: int = 8
 
     # --- Transcript chunking ---
     transcript_chunk_max_chars: int = 320

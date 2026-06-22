@@ -118,3 +118,44 @@ def query(
             )
         )
     return filter_by_score(items, min_score)
+
+
+def query_frames(video_id: str, question: str, k: int = 8) -> list[RetrievedItem]:
+    """Return the top-`k` keyframes for the question, WITHOUT a score floor.
+
+    Frames are how the model answers visual questions ("show the smiling frame"),
+    so we always hand it a spread of candidates to look at rather than filtering
+    down to the single best caption match.
+    """
+    col = _collection(video_id)
+    count = col.count()
+    if count == 0:
+        return []
+    q_emb = embed_query(question)
+    res = col.query(
+        query_embeddings=[q_emb],
+        n_results=min(k, count),
+        where={"type": "frame"},
+        include=["documents", "metadatas", "distances"],
+    )
+    ids = res.get("ids", [[]])[0]
+    docs = res.get("documents", [[]])[0]
+    metas = res.get("metadatas", [[]])[0]
+    dists = res.get("distances", [[]])[0]
+    frames: list[RetrievedItem] = []
+    for i, _id in enumerate(ids):
+        meta = metas[i] or {}
+        distance = float(dists[i]) if dists else 0.0
+        frames.append(
+            RetrievedItem(
+                id=_id,
+                type="frame",
+                text=docs[i] or "",
+                timestamp=float(meta.get("timestamp", 0.0)),
+                end=float(meta.get("end", meta.get("timestamp", 0.0))),
+                frame_path=meta.get("frame_path", "") or "",
+                distance=distance,
+                score=1.0 - distance,
+            )
+        )
+    return frames

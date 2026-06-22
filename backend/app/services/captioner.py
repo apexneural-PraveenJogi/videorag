@@ -47,7 +47,8 @@ def caption_frame(image_bytes: bytes, mime: str = "image/jpeg", model: str | Non
     try:
         resp = httpx.post(url, headers=headers, json=payload, timeout=60.0)
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"].strip()
+        content = resp.json()["choices"][0]["message"].get("content")
+        return (content or "").strip()
     except Exception as exc:  # noqa: BLE001 — best-effort
         logger.warning("frame caption failed: %s", exc)
         return ""
