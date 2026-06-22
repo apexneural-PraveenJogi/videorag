@@ -73,9 +73,14 @@ export default function VideoPage() {
   if (!ready) return <ProcessingView status={status} />
 
   return (
-    <div className="grid h-full grid-cols-1 lg:grid-cols-[1.4fr_1fr]">
-      {/* Left: player + keyframes */}
-      <div className="flex min-h-0 flex-col border-r border-ink-700 bg-ink-900">
+    <div className="grid h-full grid-cols-1 lg:grid-cols-[1fr_minmax(320px,400px)]">
+      {/* Chat — the wide working column (left on desktop, below on mobile) */}
+      <div className="order-2 min-h-0 lg:order-1">
+        <ChatPanel videoId={videoId} onSeek={seekTo} />
+      </div>
+
+      {/* Player + keyframes — sticky right rail (top on mobile) */}
+      <div className="order-1 flex min-h-0 flex-col bg-ink-900 lg:order-2 lg:border-l lg:border-ink-700">
         <div className="flex min-h-0 flex-1 items-center justify-center p-3">
           <video
             ref={videoRef}
@@ -85,11 +90,6 @@ export default function VideoPage() {
           />
         </div>
         <FrameStrip frames={frames} onSeek={seekTo} />
-      </div>
-
-      {/* Right: chat */}
-      <div className="min-h-0">
-        <ChatPanel videoId={videoId} onSeek={seekTo} />
       </div>
     </div>
   )
