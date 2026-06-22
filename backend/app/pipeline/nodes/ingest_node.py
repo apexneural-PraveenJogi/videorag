@@ -14,6 +14,7 @@ from pathlib import Path
 
 from app.config import get_settings
 from app.services import storage, vector_store, video_repo
+from app.services.chunker import chunk_segments
 from app.services.transcriber import TranscriptSegment, transcribe
 from app.services.video_processor import ExtractedFrame, extract_keyframes
 
@@ -75,10 +76,15 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
         texts: list[str] = []
         metadatas: list[dict] = []
 
-        for i, seg in enumerate(segments):
+        chunks = chunk_segments(
+            segments,
+            max_chars=settings.transcript_chunk_max_chars,
+            max_gap_s=settings.transcript_chunk_max_gap_s,
+        )
+        for i, ch in enumerate(chunks):
             ids.append(f"t-{i}")
-            texts.append(seg.text)
-            metadatas.append({"type": "transcript", "timestamp": seg.start, "end": seg.end, "frame_path": ""})
+            texts.append(ch.text)
+            metadatas.append({"type": "transcript", "timestamp": ch.start, "end": ch.end, "frame_path": ""})
 
         frame_window = (1.0 / settings.frame_extract_fps) if settings.frame_extract_fps else 1.0
         for i, fr in enumerate(frames):
