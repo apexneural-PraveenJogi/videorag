@@ -2,27 +2,41 @@ import { create } from 'zustand'
 
 const STORAGE_KEY = 'videorag_auth'
 
-// Read persisted auth from localStorage so a refresh keeps the session.
 function loadInitial() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { token: null, user: null }
+    if (!raw) return { token: null, refreshToken: null, user: null }
     const parsed = JSON.parse(raw)
-    return { token: parsed.token || null, user: parsed.user || null }
+    return {
+      token: parsed.token || null,
+      refreshToken: parsed.refreshToken || null,
+      user: parsed.user || null,
+    }
   } catch {
-    return { token: null, user: null }
+    return { token: null, refreshToken: null, user: null }
   }
 }
 
 export const useAuthStore = create((set) => ({
   ...loadInitial(),
-  setAuth: (token, user) => {
+  setAuth: (token, refreshToken, user) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, refreshToken, user }))
     } catch {
       // ignore storage failures (private mode, quota)
     }
-    set({ token, user })
+    set({ token, refreshToken, user })
+  },
+  setAccessToken: (token) => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      const parsed = raw ? JSON.parse(raw) : {}
+      parsed.token = token
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed))
+    } catch {
+      // ignore
+    }
+    set({ token })
   },
   logout: () => {
     try {
@@ -30,6 +44,6 @@ export const useAuthStore = create((set) => ({
     } catch {
       // ignore
     }
-    set({ token: null, user: null })
+    set({ token: null, refreshToken: null, user: null })
   },
 }))

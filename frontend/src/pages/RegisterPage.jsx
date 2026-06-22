@@ -39,7 +39,7 @@ export default function RegisterPage() {
     setSubmitting(true)
     try {
       const res = await register({ email, password })
-      setAuth(res.access_token, res.user)
+      setAuth(res.access_token, res.refresh_token, res.user)
       navigate('/app')
     } catch (err) {
       setError(err.message || 'Sign up failed.')

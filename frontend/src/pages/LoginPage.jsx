@@ -30,7 +30,7 @@ export default function LoginPage() {
     setSubmitting(true)
     try {
       const res = await login({ email, password })
-      setAuth(res.access_token, res.user)
+      setAuth(res.access_token, res.refresh_token, res.user)
       navigate('/app')
     } catch (err) {
       setError(err.message || 'Sign in failed.')

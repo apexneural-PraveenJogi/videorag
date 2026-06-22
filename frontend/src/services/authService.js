@@ -14,3 +14,8 @@ export async function me() {
   const { data } = await api.get('/auth/me')
   return data // { id, email }
 }
+
+export async function refreshAccessToken(refreshToken) {
+  const { data } = await api.post('/auth/refresh', { refresh_token: refreshToken })
+  return data // { access_token, token_type }
+}
