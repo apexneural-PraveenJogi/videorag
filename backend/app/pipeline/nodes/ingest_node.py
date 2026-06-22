@@ -14,6 +14,7 @@ from pathlib import Path
 
 from app.config import get_settings
 from app.services import storage, vector_store, video_repo
+from app.services.captioner import caption_frame
 from app.services.chunker import chunk_segments
 from app.services.transcriber import TranscriptSegment, transcribe
 from app.services.video_processor import ExtractedFrame, extract_keyframes
@@ -89,11 +90,16 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
         frame_window = (1.0 / settings.frame_extract_fps) if settings.frame_extract_fps else 1.0
         for i, fr in enumerate(frames):
             caption = _overlapping_text(fr.timestamp, fr.timestamp + frame_window, segments)
+            if not caption and settings.enable_visual_captions:
+                try:
+                    caption = caption_frame(fr.path.read_bytes())
+                except Exception as exc:  # noqa: BLE001 — never fail ingest on a caption
+                    logger.warning("ingest[%s] frame caption error at %.1fs: %s", video_id, fr.timestamp, exc)
+                    caption = ""
             if not caption:
                 caption = f"Video keyframe at {fr.timestamp:.1f} seconds."
             ids.append(f"f-{i}")
             texts.append(caption)
-            # frame_path holds the S3 key here (resolved to bytes / presigned URL downstream).
             metadatas.append({
                 "type": "frame", "timestamp": fr.timestamp, "end": fr.timestamp,
                 "frame_path": frame_keys[i],
