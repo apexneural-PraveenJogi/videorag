@@ -6,6 +6,7 @@ the videos table so the frontend can poll a meaningful progress bar.
 """
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 import tempfile
 import threading
@@ -24,6 +25,10 @@ logger = logging.getLogger(__name__)
 # Limits concurrent heavy ingest jobs (frame extraction + whisper) so several
 # uploads don't saturate CPU/RAM at once. Jobs that can't acquire it stay queued.
 _ingest_semaphore = threading.Semaphore(get_settings().ingest_concurrency)
+
+# Errors worth retrying (network / storage / embedding hiccups), vs. permanent
+# failures like a corrupt/undecodable video.
+_TRANSIENT = (ConnectionError, TimeoutError, OSError)
 
 
 def _overlapping_text(ts: float, te: float, segments: list[TranscriptSegment]) -> str:
@@ -117,17 +122,50 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
 def ingest_safe(video_id: str, owner_id: str, video_key: str, filename: str) -> None:
     """Background-task wrapper: never raises; records failures on the video row.
 
-    Bounds concurrency via a module-level semaphore so heavy whisper jobs don't all
-    run at once. While waiting to acquire it the video stays 'queued'.
+    Bounds concurrency via a module-level semaphore (fails fast if no slot frees
+    within the queue-wait cap), retries transient errors, and enforces a hard
+    per-job timeout so a hung job can't block the queue forever.
     """
-    _ingest_semaphore.acquire()
+    settings = get_settings()
+    if not _ingest_semaphore.acquire(timeout=settings.ingest_queue_timeout_s):
+        logger.error("ingest[%s] timed out waiting for a slot", video_id)
+        video_repo.update_video(
+            video_id, status="failed", stage="Failed",
+            error="Server busy: timed out waiting for an ingest slot. Please retry.",
+        )
+        return
+
     started = time.perf_counter()
     logger.info("ingest[%s] starting (acquired slot)", video_id)
     try:
-        run_ingest(video_id, owner_id, video_key, filename)
-        logger.info("ingest[%s] ready in %.1fs", video_id, time.perf_counter() - started)
-    except Exception as exc:
-        logger.exception("ingest[%s] failed: %s", video_id, exc)
-        video_repo.update_video(video_id, status="failed", stage="Failed", error=str(exc))
+        attempts = max(1, settings.ingest_max_retries)
+        for attempt in range(1, attempts + 1):
+            try:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                    future = ex.submit(run_ingest, video_id, owner_id, video_key, filename)
+                    future.result(timeout=settings.ingest_job_timeout_s)
+                logger.info("ingest[%s] ready in %.1fs", video_id, time.perf_counter() - started)
+                return
+            except concurrent.futures.TimeoutError:
+                logger.error("ingest[%s] exceeded %ds timeout", video_id, settings.ingest_job_timeout_s)
+                video_repo.update_video(
+                    video_id, status="failed", stage="Failed",
+                    error=f"Ingest exceeded the {settings.ingest_job_timeout_s}s time limit.",
+                )
+                return
+            except _TRANSIENT as exc:
+                if attempt < attempts:
+                    backoff = 2 ** attempt
+                    logger.warning("ingest[%s] transient error (attempt %d/%d): %s; retrying in %ds",
+                                   video_id, attempt, attempts, exc, backoff)
+                    time.sleep(backoff)
+                    continue
+                logger.exception("ingest[%s] failed after %d attempts: %s", video_id, attempts, exc)
+                video_repo.update_video(video_id, status="failed", stage="Failed", error=str(exc))
+                return
+            except Exception as exc:  # permanent failure — don't retry
+                logger.exception("ingest[%s] failed: %s", video_id, exc)
+                video_repo.update_video(video_id, status="failed", stage="Failed", error=str(exc))
+                return
     finally:
         _ingest_semaphore.release()
