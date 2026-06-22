@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useVideoStatus } from '../hooks/useVideoStatus'
-import { getFrames, videoStreamUrl } from '../services/videoService'
+import { getFrames, getStreamUrl } from '../services/videoService'
 import FrameStrip from '../components/FrameStrip.jsx'
 import ChatPanel from '../components/ChatPanel.jsx'
 
@@ -36,6 +36,7 @@ export default function VideoPage() {
   const { videoId } = useParams()
   const { status, error } = useVideoStatus(videoId)
   const [frames, setFrames] = useState([])
+  const [streamSrc, setStreamSrc] = useState('')
   const videoRef = useRef(null)
 
   const ready = status?.status === 'ready'
@@ -43,6 +44,7 @@ export default function VideoPage() {
   useEffect(() => {
     if (!ready) return
     getFrames(videoId).then(setFrames).catch(() => {})
+    getStreamUrl(videoId).then(setStreamSrc).catch(() => {})
   }, [ready, videoId])
 
   const seekTo = (seconds) => {
@@ -77,7 +79,7 @@ export default function VideoPage() {
         <div className="flex min-h-0 flex-1 items-center justify-center p-3">
           <video
             ref={videoRef}
-            src={videoStreamUrl(videoId)}
+            src={streamSrc}
             controls
             className="max-h-full max-w-full rounded-lg bg-black"
           />

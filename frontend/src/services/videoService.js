@@ -1,4 +1,4 @@
-import api, { API_BASE } from './api'
+import api from './api'
 
 export async function uploadVideo(file, onProgress) {
   const form = new FormData()
@@ -32,7 +32,8 @@ export async function getFrames(videoId) {
   return data.frames // [{ timestamp, frame_path }]
 }
 
-// URL the HTML5 player loads from (backend serves it with Range support).
-export function videoStreamUrl(videoId) {
-  return `${API_BASE}/videos/${videoId}/stream`
+// Presigned S3 URL the HTML5 player loads from (Range-enabled by S3).
+export async function getStreamUrl(videoId) {
+  const { data } = await api.get(`/videos/${videoId}/stream-url`)
+  return data.url
 }

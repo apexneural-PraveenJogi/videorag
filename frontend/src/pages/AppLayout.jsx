@@ -1,10 +1,19 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo.jsx'
+import { useAuthStore } from '../store/authStore'
 
 // Shell for everything under /app: a compact dark header + a light work area.
 export default function AppLayout() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const inVideo = pathname.includes('/app/video/')
+  const user = useAuthStore((s) => s.user)
+  const logout = useAuthStore((s) => s.logout)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
 
   return (
     <div className="flex h-full flex-col bg-ink-900 text-mist-100">
@@ -27,6 +36,18 @@ export default function AppLayout() {
           >
             Home
           </Link>
+          {user?.email && (
+            <span className="hidden text-sm text-mist-300 sm:inline">
+              {user.email}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="text-mist-300 transition hover:text-mist-100"
+          >
+            Log out
+          </button>
         </div>
       </header>
       <main className="flex-1 overflow-hidden">

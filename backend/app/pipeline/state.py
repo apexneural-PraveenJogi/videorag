@@ -17,6 +17,7 @@ class RAGState(TypedDict, total=False):
     question: str
     model: str
     top_k: int
+    history: list[dict]  # prior turns: [{"role": "user"|"assistant", "content": str}]
     # retrieve_node
     retrieved: list[RetrievedItem]
     # prompt_node

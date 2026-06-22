@@ -30,8 +30,25 @@ class Settings(BaseSettings):
     ingest_concurrency: int = 2
 
     # --- Storage / vector store ---
-    storage_dir: str = "./storage"
+    storage_dir: str = "./storage"  # local temp scratch for ingest only
     chroma_persist_dir: str = "./chroma_db"
+
+    # --- Database (Postgres) ---
+    # e.g. postgresql+psycopg://user:pass@localhost:5432/videorag
+    database_url: str = ""
+
+    # --- Auth (JWT) ---
+    jwt_secret: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
+
+    # --- AWS S3 ---
+    aws_s3_bucket: str = ""
+    aws_region: str = "us-east-1"
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+    aws_s3_endpoint_url: str = ""  # set for S3-compatible hosts (e.g. MinIO); blank = real AWS
+    presign_expire_seconds: int = 3600
 
     # --- Server ---
     cors_origins: str = "http://localhost:5173"
@@ -78,6 +95,24 @@ class Settings(BaseSettings):
     @property
     def effective_embedding_key(self) -> str:
         return self.embedding_api_key or self.openrouter_api_key
+
+    @property
+    def db_configured(self) -> bool:
+        return bool(self.database_url)
+
+    @property
+    def s3_configured(self) -> bool:
+        return bool(self.aws_s3_bucket and self.aws_access_key_id and self.aws_secret_access_key)
+
+    @property
+    def psycopg_conninfo(self) -> str:
+        """libpq/psycopg connection string (no SQLAlchemy driver prefix) for
+        LangChain's PostgresChatMessageHistory."""
+        url = self.database_url
+        for prefix in ("postgresql+psycopg://", "postgresql+psycopg2://", "postgres://"):
+            if url.startswith(prefix):
+                return "postgresql://" + url[len(prefix):]
+        return url
 
 
 @lru_cache

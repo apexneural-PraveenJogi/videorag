@@ -6,11 +6,11 @@ import time
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+from app.api import auth as auth_api
 from app.api import query as query_api
 from app.api import video as video_api
 from app.config import get_settings
@@ -53,11 +53,28 @@ async def log_requests(request: Request, call_next):
     )
     return response
 
-# Serve extracted frames as static files (referenced by /frames/<id>/<name>).
-app.mount("/frames", StaticFiles(directory=str(settings.frames_dir)), name="frames")
-
+app.include_router(auth_api.router, prefix=settings.api_prefix)
 app.include_router(video_api.router, prefix=settings.api_prefix)
 app.include_router(query_api.router, prefix=settings.api_prefix)
+
+
+@app.on_event("startup")
+def _startup() -> None:
+    """Create DB tables and the chat-history table when the DB is configured."""
+    if not settings.db_configured:
+        logger.warning("DATABASE_URL not set — auth/persistence disabled until configured.")
+        return
+    try:
+        from app.db import init_db
+        from app.services import chat_memory
+
+        init_db()
+        chat_memory.init_tables()
+        logger.info("database ready (tables ensured)")
+    except Exception as exc:  # noqa: BLE001 — don't crash boot on a transient DB issue
+        logger.error("database init failed: %s", exc)
+    if not settings.s3_configured:
+        logger.warning("AWS S3 not configured — uploads will fail until set.")
 
 
 @app.get(f"{settings.api_prefix}/health", tags=["health"])
@@ -68,6 +85,8 @@ async def health() -> dict:
         "openrouter_configured": bool(settings.openrouter_api_key),
         "whisper_model": settings.whisper_model,
         "ingest_concurrency": settings.ingest_concurrency,
+        "db_configured": settings.db_configured,
+        "s3_configured": settings.s3_configured,
     }
 
 
