@@ -24,6 +24,18 @@ class RetrievedItem:
     end: float
     frame_path: str  # "" for transcript items
     distance: float
+    score: float = 0.0  # cosine similarity = 1 - distance
+
+
+def filter_by_score(items: list[RetrievedItem], min_score: float) -> list[RetrievedItem]:
+    """Drop items below the similarity floor. If everything is below it, keep the
+    single best item so the model still has something to work with."""
+    if not items:
+        return []
+    kept = [i for i in items if i.score >= min_score]
+    if kept:
+        return kept
+    return [max(items, key=lambda i: i.score)]
 
 
 @lru_cache
@@ -65,7 +77,17 @@ def index_items(
     return len(ids)
 
 
-def query(video_id: str, question: str, top_k: int = 5) -> list[RetrievedItem]:
+def query(
+    video_id: str,
+    question: str,
+    top_k: int = 5,
+    min_score: float | None = None,
+) -> list[RetrievedItem]:
+    settings = get_settings()
+    top_k = max(1, min(top_k, settings.top_k_max))
+    if min_score is None:
+        min_score = settings.retrieval_min_score
+
     col = _collection(video_id)
     if col.count() == 0:
         return []
@@ -82,6 +104,7 @@ def query(video_id: str, question: str, top_k: int = 5) -> list[RetrievedItem]:
     dists = res.get("distances", [[]])[0]
     for i, _id in enumerate(ids):
         meta = metas[i] or {}
+        distance = float(dists[i]) if dists else 0.0
         items.append(
             RetrievedItem(
                 id=_id,
@@ -90,7 +113,8 @@ def query(video_id: str, question: str, top_k: int = 5) -> list[RetrievedItem]:
                 timestamp=float(meta.get("timestamp", 0.0)),
                 end=float(meta.get("end", meta.get("timestamp", 0.0))),
                 frame_path=meta.get("frame_path", "") or "",
-                distance=float(dists[i]) if dists else 0.0,
+                distance=distance,
+                score=1.0 - distance,
             )
         )
-    return items
+    return filter_by_score(items, min_score)

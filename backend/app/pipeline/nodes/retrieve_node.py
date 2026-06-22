@@ -10,5 +10,6 @@ def retrieve_node(state: RAGState) -> RAGState:
         video_id=state["video_id"],
         question=state["question"],
         top_k=state.get("top_k", 5),
+        min_score=state.get("min_score"),
     )
     return {"retrieved": items}
