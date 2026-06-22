@@ -15,13 +15,56 @@ body {
 /* Amber selection to match the projector-light accent. */
 ::selection {
   background: #f5c451;
-  color: #0b0e14;
+  color: #0a0c12;
+}
+
+/* Visible keyboard focus everywhere (the cutting room is still operable). */
+:focus-visible {
+  outline: 2px solid #f5c451;
+  outline-offset: 2px;
 }
 
 /* Thin dark scrollbars inside app panels. */
 .scroll-slim {
   scrollbar-width: thin;
   scrollbar-color: #2a3242 transparent;
+}
+
+/* ── Cutting-room display type ───────────────────────────────────────────── */
+/* Optical sizing + tighter caps for the big Archivo headlines. */
+.headline {
+  font-feature-settings: 'ss01';
+  text-wrap: balance;
+}
+
+/* ── Filmstrip marquee ───────────────────────────────────────────────────── */
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: marquee 38s linear infinite;
+}
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* ── Custom playhead cursor (marketing surface, fine pointers only) ──────── */
+@media (pointer: fine) {
+  .cursor-cut {
+    cursor: none;
+  }
+}
+
+/* The cursor element is rendered in React (Framer drives its transform);
+   the visual is centered on the pointer from inside the component. */
+.playhead-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -31,5 +74,12 @@ body {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .cursor-cut {
+    cursor: auto;
+  }
+  .playhead-cursor {
+    display: none;
   }
 }
