@@ -42,6 +42,36 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # --- App environment ---
+    app_env: str = "development"  # "development" | "production"
+
+    # --- Auth token lifetimes ---
+    access_token_expire_minutes: int = 60
+    refresh_token_expire_minutes: int = 60 * 24 * 7  # 7 days
+
+    # --- Retrieval tuning ---
+    retrieval_min_score: float = 0.25  # cosine similarity floor (1 - distance)
+    top_k_max: int = 20
+
+    # --- Transcript chunking ---
+    transcript_chunk_max_chars: int = 320
+    transcript_chunk_max_gap_s: float = 1.5
+
+    # --- Visual captions for transcript-less frames ---
+    enable_visual_captions: bool = True
+    visual_caption_model: str = ""  # falls back to default_vision_model
+
+    # --- Ingest reliability ---
+    ingest_max_retries: int = 2
+    ingest_job_timeout_s: int = 1800   # hard cap per ingest job
+    ingest_queue_timeout_s: int = 600  # max wait for a concurrency slot
+
+    # --- Attribution / public URL ---
+    public_base_url: str = "http://localhost:5173"
+
+    # --- Rate limiting (auth) ---
+    rate_limit_auth: str = "5/minute"
+
     # --- AWS S3 ---
     aws_s3_bucket: str = ""
     aws_region: str = "us-east-1"
@@ -58,6 +88,10 @@ class Settings(BaseSettings):
     # --- Rate limiting (slowapi limit strings, e.g. "10/minute") ---
     rate_limit_upload: str = "10/minute"
     rate_limit_query: str = "30/minute"
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env.lower() == "production"
 
     @property
     def vision_models(self) -> list[dict]:
