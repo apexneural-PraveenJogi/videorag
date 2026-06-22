@@ -17,7 +17,12 @@ class Settings(BaseSettings):
     # OpenRouter key is reused for embeddings per project decision. Because OpenRouter
     # may not expose an /embeddings route, the base URL is independently overridable
     # (e.g. point it at https://api.openai.com/v1 with the same or a different key).
-    embedding_model: str = "text-embedding-3-small"
+    # Chosen via an embedding bake-off (2026-06-22): on a labeled retrieval set
+    # nemotron matched text-embedding-3-small and gemini-embedding-2 on accuracy
+    # but gave the cleanest score separation — 0 off-topic false positives vs
+    # gemini's near-total pass-through — and is free. Pairs with retrieval_min_score
+    # below (tuned to nemotron's lower-magnitude score range).
+    embedding_model: str = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
     embedding_base_url: str = "https://openrouter.ai/api/v1"
     embedding_api_key: str = ""  # falls back to openrouter_api_key when empty
 
@@ -50,7 +55,11 @@ class Settings(BaseSettings):
     refresh_token_expire_minutes: int = 60 * 24 * 7  # 7 days
 
     # --- Retrieval tuning ---
-    retrieval_min_score: float = 0.25  # cosine similarity floor (1 - distance)
+    # 0.20 floor tuned to the nemotron embedding score range: on the bake-off it
+    # kept all on-topic matches while rejecting every off-topic query (worst
+    # off-topic similarity was ~0.145). Raise toward 0.25+ if you switch back to
+    # an OpenAI-scale embedding model.
+    retrieval_min_score: float = 0.20  # cosine similarity floor (1 - distance)
     top_k_max: int = 20
 
     # --- Transcript chunking ---
