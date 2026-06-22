@@ -24,6 +24,11 @@ def session_id(user_id: str, video_id: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, f"{user_id}:{video_id}"))
 
 
+def is_enabled() -> bool:
+    """Whether conversational memory is available (DB configured)."""
+    return get_settings().db_configured
+
+
 def _connect():
     return psycopg.connect(get_settings().psycopg_conninfo)
 

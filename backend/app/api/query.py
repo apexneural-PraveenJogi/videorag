@@ -62,6 +62,7 @@ def query(
         references=[Reference(**r) for r in result.get("references", [])],
         model_used=model,
         latency_ms=int((time.perf_counter() - started) * 1000),
+        history_enabled=chat_memory.is_enabled(),
     )
 
 
@@ -102,7 +103,7 @@ def query_stream(
             yield f"event: error\ndata: {json.dumps(str(exc))}\n\n"
             return
         chat_memory.save_turn(session, req.question, "".join(parts))
-        yield f"event: done\ndata: {json.dumps({'model_used': model})}\n\n"
+        yield f"event: done\ndata: {json.dumps({'model_used': model, 'history_enabled': chat_memory.is_enabled()})}\n\n"
 
     return StreamingResponse(
         event_stream(),

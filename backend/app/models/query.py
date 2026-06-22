@@ -21,3 +21,4 @@ class QueryResponse(BaseModel):
     references: list[Reference]
     model_used: str
     latency_ms: int
+    history_enabled: bool = True
