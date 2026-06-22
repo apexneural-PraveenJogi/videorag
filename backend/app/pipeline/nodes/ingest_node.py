@@ -124,7 +124,8 @@ def ingest_safe(video_id: str, owner_id: str, video_key: str, filename: str) -> 
 
     Bounds concurrency via a module-level semaphore (fails fast if no slot frees
     within the queue-wait cap), retries transient errors, and enforces a hard
-    per-job timeout so a hung job can't block the queue forever.
+    per-job timeout: caps how long the caller waits before marking the job failed
+    (the underlying worker thread may continue running until it returns).
     """
     settings = get_settings()
     if not _ingest_semaphore.acquire(timeout=settings.ingest_queue_timeout_s):
