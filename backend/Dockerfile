@@ -11,5 +11,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 
 ENV CHROMA_PERSIST_DIR=/data/chroma_db
-EXPOSE 8000
+EXPOSE 8072
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8072"]
