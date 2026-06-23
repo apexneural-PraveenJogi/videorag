@@ -45,7 +45,7 @@ export default function LoginPage() {
       footer={
         <>
           No account?{' '}
-          <Link to="/register" className="font-medium text-amber-500 hover:text-amber-400">
+          <Link to="/register" className="font-semibold text-amber-500 transition-colors hover:text-amber-600">
             Create one
           </Link>
         </>
@@ -76,12 +76,12 @@ export default function LoginPage() {
           />
         </label>
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="mt-1 rounded-xl bg-amber-500 px-4 py-2.5 font-semibold text-ink-900 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-1 rounded-pill bg-amber-500 px-4 py-2.5 font-semibold text-white transition-colors hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>

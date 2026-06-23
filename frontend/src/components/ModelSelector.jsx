@@ -22,12 +22,12 @@ export default function ModelSelector() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <label className="flex items-center gap-2 font-mono text-xs text-mist-500">
+    <label className="flex items-center gap-2 text-xs text-mist-500">
       <span className="hidden sm:inline">Model</span>
       <select
         value={model}
         onChange={(e) => setModel(e.target.value)}
-        className="max-w-[14rem] rounded-md border border-ink-600 bg-ink-900 px-2 py-1 text-xs text-mist-100 focus:border-amber-500/50 focus:outline-none"
+        className="max-w-[14rem] rounded-pill bg-ink-700 px-3 py-1.5 text-xs text-mist-100 outline-none transition-shadow focus:ring-2 focus:ring-amber-500/40"
       >
         {models.map((m) => (
           <option key={m.id} value={m.id}>

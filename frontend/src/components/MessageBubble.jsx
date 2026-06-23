@@ -44,7 +44,7 @@ function renderText(text, onSeek) {
         key={`${m.index}-${label}`}
         type="button"
         onClick={() => onSeek?.(toSeconds(label))}
-        className="mx-0.5 rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-[0.8em] text-amber-400 transition hover:bg-amber-500/25"
+        className="mx-0.5 rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-[0.8em] text-amber-600 transition hover:bg-amber-500/25"
       >
         {label}
       </button>,
@@ -77,12 +77,12 @@ export default function MessageBubble({ message, onSeek }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[88%] rounded-2xl px-4 py-2.5 ${
+        className={`max-w-[88%] rounded-card px-4 py-2.5 ${
           isUser
-            ? 'bg-amber-500 text-ink-900'
+            ? 'bg-amber-500 text-white'
             : message.error
-              ? 'bg-red-500/10 text-red-200 ring-1 ring-red-500/30'
-              : 'bg-ink-700 text-mist-100 ring-1 ring-ink-500'
+              ? 'bg-red-50 text-red-600 ring-1 ring-red-500/30'
+              : 'bg-ink-800 text-mist-100'
         }`}
       >
         <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
@@ -94,7 +94,7 @@ export default function MessageBubble({ message, onSeek }) {
             <>
               {renderText(message.text, onSeek)}
               {message.streaming && (
-                <span className="ml-0.5 inline-block h-4 w-1.5 animate-blink bg-amber-400 align-middle" />
+                <span className="ml-0.5 inline-block h-4 w-1.5 animate-blink bg-amber-500 align-middle" />
               )}
             </>
           )}

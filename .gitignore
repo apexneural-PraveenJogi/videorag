@@ -16,3 +16,10 @@ frontend/dist/
 # Logs / OS
 *.log
 .DS_Store
+
+# WSL alternate-data-stream marker files
+*:Zone.Identifier
+
+# Large source videos dropped at the repo root (exceed GitHub's 100 MB limit).
+# Web-optimized assets under frontend/public/ are still tracked.
+/*.mp4

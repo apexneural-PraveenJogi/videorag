@@ -4,78 +4,75 @@ export default {
   theme: {
     extend: {
       colors: {
-        // "Cutting Room" palette — committed tokens. Deep blue-graphite ground
-        // (the dark editing suite), soft off-white text, a single warm
-        // projector-amber accent (the "light"). Boldness is spent on motion +
-        // type, so amber is the only vivid hue; everything else is structure.
+        // Bento / 3D-SaaS palette — tokens remapped by ROLE so existing usages
+        // re-theme automatically. Depth comes from card-bg contrast on the
+        // steel page ground, never from shadows or borders.
+        //   ink-*   = grounds & card surfaces
+        //   mist-*  = text on light
+        //   amber-* = the accent (now BLUE)
+        //   night-* = dark cards (#111)
         ink: {
-          900: '#0A0C12', // ground (deep blue-graphite)
-          800: '#12161F', // surface
-          700: '#161B26', // panels
-          600: '#1C2230', // raised
-          500: '#2A3242', // hairline / timeline track
-          400: '#3A4357',
+          900: '#D6DDE8', // page background (steel blue-gray)
+          800: '#FFFFFF', // white card
+          700: '#E8ECF2', // mid card
+          600: 'rgba(0,0,0,0.08)', // border color (spec)
+          500: 'rgba(0,0,0,0.08)', // hairline
+          400: '#B8C2D0', // stronger muted edge
         },
         mist: {
-          100: '#E8EAF0', // primary text
-          300: '#AEB4C2', // secondary text
-          500: '#8A93A6', // muted / captions
+          100: '#111111', // text primary
+          300: '#555555', // text secondary
+          500: '#888888', // text muted
         },
         amber: {
-          // projector light
-          400: '#FFD27D',
-          500: '#F5C451',
-          600: '#E9B23A',
+          400: '#60A5FA', // light accent
+          500: '#3B82F6', // accent (spec)
+          600: '#2563EB', // accent hover / active
         },
-        // brand alias kept so existing app components still resolve.
         brand: {
-          50: '#eef2ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
+          50: '#EFF6FF',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
         },
+        night: {
+          900: '#111111', // dark card (spec)
+          950: '#0A0A0A',
+          line: 'rgba(255,255,255,0.10)', // hairline on dark
+        },
+        fog: '#A1A1AA', // muted text on dark cards
+        accent: '#3B82F6',
+        steel: '#D6DDE8',
       },
       fontFamily: {
-        // Archivo (heavy, wide, technical-editorial) carries the personality;
-        // Inter stays the neutral body workhorse; IBM Plex Mono is the
-        // timecode/data voice — the heartbeat of the product.
-        display: ['Archivo', 'system-ui', 'sans-serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        // Space Grotesk everywhere, Inter fallback (spec global rule).
+        sans: ['"Space Grotesk"', 'Inter', 'sans-serif'],
+        display: ['"Space Grotesk"', 'Inter', 'sans-serif'],
+        mono: ['"Space Grotesk"', 'Inter', 'sans-serif'],
       },
       fontSize: {
-        // Fluid display scale — the type IS the design here.
-        'display-2xl': ['clamp(3rem, 9vw, 8rem)', { lineHeight: '0.92', letterSpacing: '-0.03em' }],
-        'display-xl': ['clamp(2.5rem, 6vw, 5rem)', { lineHeight: '0.95', letterSpacing: '-0.025em' }],
-        'display-lg': ['clamp(2rem, 4vw, 3.25rem)', { lineHeight: '1.0', letterSpacing: '-0.02em' }],
+        // Big, tight, heavy hero scale.
+        'display-2xl': ['clamp(2.75rem, 6vw, 4rem)', { lineHeight: '1.05', fontWeight: '700' }], // hero H1
+        'display-xl': ['2rem', { lineHeight: '1.1', fontWeight: '700' }],
+        'display-lg': ['1.5rem', { lineHeight: '1.2', fontWeight: '600' }],
       },
       letterSpacing: {
-        eyebrow: '0.32em',
+        eyebrow: '0.1em', // section label (spec)
+      },
+      borderRadius: {
+        card: '20px', // cards (spec)
+        pill: '50px', // pill buttons (spec)
+        badge: '8px', // small badges/tags (spec)
       },
       keyframes: {
-        'gradient-drift': {
-          '0%, 100%': { transform: 'translate3d(0,0,0) scale(1)' },
-          '50%': { transform: 'translate3d(2%, -3%, 0) scale(1.08)' },
-        },
-        scan: {
-          '0%': { transform: 'translateX(-100%)' },
-          '100%': { transform: 'translateX(100%)' },
-        },
-        blink: {
-          '0%, 49%': { opacity: '1' },
-          '50%, 100%': { opacity: '0.15' },
-        },
-        // filmstrip marquee — "questions you can ask" scrolling like a reel
         marquee: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
         },
       },
       animation: {
-        'gradient-drift': 'gradient-drift 18s ease-in-out infinite',
-        scan: 'scan 2.4s linear infinite',
-        blink: 'blink 1.1s steps(1) infinite',
         marquee: 'marquee 38s linear infinite',
+        'spin-slow': 'spin 22s linear infinite',
       },
     },
   },

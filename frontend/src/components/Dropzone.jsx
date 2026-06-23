@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { validateVideoFile, MAX_VIDEO_SIZE_MB } from '../utils/fileValidation'
+import { validateVideoFile, MAX_VIDEO_SIZE_LABEL } from '../utils/fileValidation'
 
 export default function Dropzone({ onFile, disabled }) {
   const inputRef = useRef(null)
@@ -36,8 +36,8 @@ export default function Dropzone({ onFile, disabled }) {
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        className={`flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed px-8 py-16 transition
-          ${dragging ? 'border-amber-500 bg-amber-500/10' : 'border-ink-500 bg-ink-800/60 hover:border-amber-500/60 hover:bg-ink-700/60'}
+        className={`flex w-full flex-col items-center justify-center gap-3 rounded-card border-2 border-dashed px-8 py-16 transition-colors
+          ${dragging ? 'border-amber-500 bg-amber-500/5' : 'border-ink-400 bg-ink-800 hover:border-amber-500 hover:bg-[#FAFBFC]'}
           ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
       >
         <svg viewBox="0 0 24 24" className="h-10 w-10 text-amber-500" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -47,8 +47,8 @@ export default function Dropzone({ onFile, disabled }) {
         <span className="text-base font-medium text-mist-100">
           Drop a video here, or <span className="text-amber-500">browse</span>
         </span>
-        <span className="font-mono text-sm text-mist-500">
-          MP4, MOV, WebM, MKV, AVI · up to {MAX_VIDEO_SIZE_MB} MB
+        <span className="text-sm text-mist-500">
+          MP4, MOV, WebM, MKV, AVI · up to {MAX_VIDEO_SIZE_LABEL}
         </span>
         <input
           ref={inputRef}
@@ -62,7 +62,7 @@ export default function Dropzone({ onFile, disabled }) {
           }}
         />
       </button>
-      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
     </div>
   )
 }

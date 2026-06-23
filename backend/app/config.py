@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     frame_extract_fps: float = 1.0
     frame_format: str = "jpg"  # jpg | png
     whisper_model: str = "base"
-    max_video_size_mb: int = 500
+    max_video_size_mb: int = 5120  # 5 GB
     # Max number of heavy ingest jobs (frame extraction + whisper) running at once.
     ingest_concurrency: int = 2
     # Parallel workers for per-frame work within one ingest (S3 uploads + vision

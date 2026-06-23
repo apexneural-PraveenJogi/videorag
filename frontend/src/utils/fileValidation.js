@@ -6,7 +6,9 @@ export const ALLOWED_VIDEO_TYPES = [
   'video/x-msvideo',
 ]
 
-export const MAX_VIDEO_SIZE_MB = 500
+export const MAX_VIDEO_SIZE_MB = 5120 // 5 GB
+// Human-friendly cap for UI copy.
+export const MAX_VIDEO_SIZE_LABEL = '5 GB'
 
 export function validateVideoFile(file) {
   if (!file) return 'No file selected.'
@@ -15,7 +17,8 @@ export function validateVideoFile(file) {
   }
   const sizeMb = file.size / (1024 * 1024)
   if (sizeMb > MAX_VIDEO_SIZE_MB) {
-    return `File is ${sizeMb.toFixed(0)} MB; max is ${MAX_VIDEO_SIZE_MB} MB.`
+    const sizeGb = (sizeMb / 1024).toFixed(1)
+    return `File is ${sizeGb} GB; max is ${MAX_VIDEO_SIZE_LABEL}.`
   }
   return null
 }

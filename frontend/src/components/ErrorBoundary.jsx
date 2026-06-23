@@ -22,10 +22,10 @@ export default class ErrorBoundary extends Component {
     if (this.state.error) {
       return (
         <div className="flex h-full min-h-screen flex-col items-center justify-center gap-4 bg-ink-900 px-6 text-center">
-          <div className="font-mono text-xs uppercase tracking-eyebrow text-amber-500">
+          <div className="text-[0.75rem] font-medium uppercase tracking-eyebrow text-amber-500">
             Something broke
           </div>
-          <h1 className="font-display text-2xl font-semibold text-mist-100">
+          <h1 className="text-2xl font-bold text-mist-100">
             The page hit an unexpected error
           </h1>
           <p className="max-w-md text-sm text-mist-300">
@@ -35,13 +35,13 @@ export default class ErrorBoundary extends Component {
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-ink-900 transition hover:bg-amber-400"
+              className="rounded-pill bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-amber-600"
             >
               Reload
             </button>
             <a
               href="/"
-              className="rounded-lg border border-ink-500 px-4 py-2 text-sm font-medium text-mist-100 transition hover:border-ink-400"
+              className="rounded-pill border-[1.5px] border-mist-100 px-5 py-2.5 text-sm font-medium text-mist-100 transition-colors hover:bg-mist-100 hover:text-white"
             >
               Back home
             </a>

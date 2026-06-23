@@ -10,9 +10,9 @@ export function useToast() {
 }
 
 const STYLES = {
-  error: 'border-red-500/40 bg-red-950/80 text-red-100',
-  success: 'border-amber-500/40 bg-ink-700 text-mist-100',
-  info: 'border-ink-500 bg-ink-700 text-mist-100',
+  error: 'border-red-500/40 bg-red-50 text-red-700',
+  success: 'border-amber-500/40 bg-ink-800 text-mist-100',
+  info: 'border-ink-600 bg-ink-800 text-mist-100',
 }
 
 export function ToastProvider({ children }) {
@@ -46,7 +46,7 @@ export function ToastProvider({ children }) {
               exit={{ opacity: 0, x: 24 }}
               transition={{ duration: 0.2 }}
               onClick={() => dismiss(t.id)}
-              className={`pointer-events-auto cursor-pointer rounded-xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${STYLES[t.type] || STYLES.info}`}
+              className={`pointer-events-auto cursor-pointer rounded-card border px-4 py-3 text-sm ${STYLES[t.type] || STYLES.info}`}
             >
               {t.message}
             </motion.div>

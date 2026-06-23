@@ -2,69 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-page: #d6dde8;
+  --bg-card-light: #ffffff;
+  --bg-card-dark: #111111;
+  --bg-card-mid: #e8ecf2;
+  --color-accent: #3b82f6;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  --text-on-dark: #ffffff;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --radius-card: 20px;
+  --radius-btn: 50px;
+  --radius-badge: 8px;
+  --font-primary: 'Space Grotesk', 'Inter', sans-serif;
+}
+
 html,
 body,
 #root {
   height: 100%;
 }
 
+/* Space Grotesk on the steel page ground, dark primary text. */
 body {
   @apply bg-ink-900 font-sans text-mist-100 antialiased;
 }
 
-/* Amber selection to match the projector-light accent. */
-::selection {
-  background: #f5c451;
-  color: #0a0c12;
+/* Every interactive surface inherits the primary font (spec global rule). */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
-/* Visible keyboard focus everywhere (the cutting room is still operable). */
+/* Blue selection. */
+::selection {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+/* Visible keyboard focus everywhere, in the accent color. */
 :focus-visible {
-  outline: 2px solid #f5c451;
+  outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
 
-/* Thin dark scrollbars inside app panels. */
+/* Thin scrollbars inside app panels. */
 .scroll-slim {
   scrollbar-width: thin;
-  scrollbar-color: #2a3242 transparent;
+  scrollbar-color: #b8c2d0 transparent;
 }
 
-/* ── Cutting-room display type ───────────────────────────────────────────── */
-/* Optical sizing + tighter caps for the big Archivo headlines. */
+/* Balanced headline wrapping. */
 .headline {
-  font-feature-settings: 'ss01';
   text-wrap: balance;
 }
 
-/* ── Filmstrip marquee ───────────────────────────────────────────────────── */
+/* ── Ticker marquee ───────────────────────────────────────────── */
 .marquee-track {
   display: inline-flex;
   white-space: nowrap;
   will-change: transform;
-  animation: marquee 38s linear infinite;
 }
 .marquee-mask {
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
-}
-
-/* ── Custom playhead cursor (marketing surface, fine pointers only) ──────── */
-@media (pointer: fine) {
-  .cursor-cut {
-    cursor: none;
-  }
-}
-
-/* The cursor element is rendered in React (Framer drives its transform);
-   the visual is centered on the pointer from inside the component. */
-.playhead-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 9999;
-  pointer-events: none;
-  will-change: transform;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -75,11 +80,5 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
-  }
-  .cursor-cut {
-    cursor: auto;
-  }
-  .playhead-cursor {
-    display: none;
   }
 }
