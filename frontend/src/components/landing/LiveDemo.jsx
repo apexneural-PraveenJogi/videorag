@@ -1,23 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { formatTimestamp } from '../../utils/formatTimestamp'
+import { getHeroVideoUrl } from '../../services/videoService'
 
 // The hero centrepiece: a looping "live stream" on the left and, beside it, a
 // self-playing chat that types out grounded questions & answers — the actual
 // product in miniature. The timecode chips seek the live video (shared ref).
 // Both render as bento cells; honours prefers-reduced-motion (no typing).
-const LIVE_SRC = '/live.mp4'
+// The clip streams from S3 (presigned URL); the bundled file is a fallback.
+const LIVE_FALLBACK = '/live.mp4'
 
 const cell = {
   hidden: { opacity: 0, y: 16, scale: 0.98 },
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
 }
 
-// Neutral questions that fit any footage; timecodes sit inside the clip.
+// Scripted Q&A grounded in the real clip: coding and software development with
+// AI assistants. Plain text only (the bubbles render literally — no markdown).
 const SCRIPT = [
-  { q: "What's happening in this stream?", a: 'The scene opens on the main subject, then the camera settles and the action builds toward the centre of the frame.', chips: [{ t: 12 }, { t: 48 }] },
-  { q: 'Summarise the key moments so far.', a: 'Three beats stand out: the intro around 0:12, the turn at 1:05, and the payoff near 2:30 — each indexed and searchable.', chips: [{ t: 65 }] },
-  { q: 'Jump to the most important part.', a: 'The pivotal moment lands at 2:30 — click the timecode and the player seeks straight there.', chips: [{ t: 150 }] },
+  { q: 'What is this video about?', a: 'It is about coding and software development with AI assistants. The speaker introduces the tools, then moves to writing code at his desk.', chips: [{ t: 0 }, { t: 7 }] },
+  { q: 'Which AI models appear?', a: 'Three logos are on the wall behind the speaker at the start: Claude, Codex, and Gemini.', chips: [{ t: 0 }] },
+  { q: 'Show me where he writes code.', a: 'At 0:07 he is sitting at the desk with code open on his laptop screen.', chips: [{ t: 7 }] },
 ]
 
 function prefersReducedMotion() {
@@ -35,7 +38,24 @@ export default function LiveDemo() {
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(193)
   const [videoOk, setVideoOk] = useState(true)
+  const [src, setSrc] = useState(null)
   const [messages, setMessages] = useState([])
+
+  // Load the hero clip from S3 (presigned); fall back to the bundled file if
+  // S3 isn't configured or the request fails.
+  useEffect(() => {
+    let alive = true
+    getHeroVideoUrl()
+      .then((url) => {
+        if (alive) setSrc(url || LIVE_FALLBACK)
+      })
+      .catch(() => {
+        if (alive) setSrc(LIVE_FALLBACK)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
 
   // live timecode from the real video
   useEffect(() => {
@@ -110,10 +130,10 @@ export default function LiveDemo() {
         variants={cell}
         className="relative h-full min-h-[260px] overflow-hidden rounded-card bg-night-900"
       >
-        {videoOk ? (
+        {videoOk && src ? (
           <video
             ref={videoRef}
-            src={LIVE_SRC}
+            src={src}
             autoPlay
             muted
             loop

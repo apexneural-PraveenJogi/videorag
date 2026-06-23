@@ -172,7 +172,7 @@ export default function LandingPage() {
             variants={grid}
             initial="hidden"
             animate="show"
-            className="mt-8 grid gap-3 lg:h-[440px] lg:grid-cols-2"
+            className="mt-8 grid gap-3 lg:h-[440px] lg:grid-cols-[1.35fr_1fr]"
           >
             <LiveDemo />
           </motion.div>

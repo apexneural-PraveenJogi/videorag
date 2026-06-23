@@ -15,6 +15,11 @@ from app.api import query as query_api
 from app.api import video as video_api
 from app.config import get_settings
 from app.dependencies import limiter
+from app.services import storage
+
+# Public marketing asset: the looping clip shown in the landing hero, served
+# from S3 like every other video (key is uploaded once, out of band).
+HERO_VIDEO_KEY = "public/hero/live.mp4"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -100,3 +105,19 @@ async def models() -> dict:
         "default": settings.default_vision_model,
         "models": settings.vision_models,
     }
+
+
+@app.get(f"{settings.api_prefix}/hero-video", tags=["public"])
+async def hero_video() -> dict:
+    """Presigned URL for the landing-page hero clip in S3 (public, unauthed).
+
+    Returns ``{"url": null}`` when S3 isn't configured so the client can fall
+    back to the bundled asset.
+    """
+    if not settings.s3_configured:
+        return {"url": None}
+    try:
+        return {"url": storage.presigned_url(HERO_VIDEO_KEY)}
+    except Exception:  # noqa: BLE001 — never let the marketing page 500
+        logger.exception("hero-video presign failed")
+        return {"url": None}

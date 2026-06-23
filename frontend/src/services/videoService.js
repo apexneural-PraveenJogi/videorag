@@ -37,3 +37,10 @@ export async function getStreamUrl(videoId) {
   const { data } = await api.get(`/videos/${videoId}/stream-url`)
   return data.url
 }
+
+// Presigned S3 URL for the public landing-page hero clip (no auth required).
+// Returns null when S3 isn't configured so the caller can fall back.
+export async function getHeroVideoUrl() {
+  const { data } = await api.get('/hero-video')
+  return data.url
+}
