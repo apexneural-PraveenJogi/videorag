@@ -31,7 +31,7 @@ const NAV_LINKS = [
   { label: 'Product', href: '#hero' },
   { label: 'How it works', href: '#how' },
   { label: 'Advantages', href: '#advantages' },
-  { label: 'Pricing', href: '#release' },
+ // { label: 'Pricing', href: '#release' },
 ]
 
 const Icon = ({ d, className = 'h-6 w-6' }) => (
