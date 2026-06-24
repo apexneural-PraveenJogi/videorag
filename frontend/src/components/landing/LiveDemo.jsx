@@ -15,12 +15,25 @@ const cell = {
   show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
 }
 
-// Scripted Q&A grounded in the real clip: coding and software development with
-// AI assistants. Plain text only (the bubbles render literally — no markdown).
+// Scripted Q&A grounded in the real clip: a father's-sacrifice story about
+// buying school shoes for his son. Plain text only (bubbles render literally —
+// no markdown); the chips seek the live video to each cited second.
 const SCRIPT = [
-  { q: 'What is this video about?', a: 'It is about coding and software development with AI assistants. The speaker introduces the tools, then moves to writing code at his desk.', chips: [{ t: 0 }, { t: 7 }] },
-  { q: 'Which AI models appear?', a: 'Three logos are on the wall behind the speaker at the start: Claude, Codex, and Gemini.', chips: [{ t: 0 }] },
-  { q: 'Show me where he writes code.', a: 'At 0:07 he is sitting at the desk with code open on his laptop screen.', chips: [{ t: 7 }] },
+  {
+    q: 'Give me a short summary of this video.',
+    a: "This video tells a heartwarming story of a father's sacrifice and hard work to give his son a better future. Discouraged by the high price of new shoes for his school-age son at 0:28, the father labours at a construction site, lifting heavy cement bags at 1:03 to earn the money. His dedication lets him buy the school shoes and tie them onto his son at 0:53. As the months and years pass — captured in a photo album at 2:24 — the son grows up and is later seen shopping in a modern shoe store at 2:37. The video closes on their strong, lifelong bond as they walk hand-in-hand through their village at 3:06.",
+    chips: [{ t: 28 }, { t: 53 }, { t: 63 }, { t: 144 }, { t: 157 }, { t: 186 }],
+  },
+  {
+    q: 'How many people are there in this video?',
+    a: 'There are a few distinct people. The main characters are the father (seen at 0:23, 0:36, 0:46 and 3:13), his young son (at 0:23 and 0:46), and the grown-up son (seen at 2:39, walking beside his father at 3:13). In the background, one person sits outside a house at 0:23 and three more are on the street at 0:36 — one on a motorcycle and two standing near the shops.',
+    chips: [{ t: 23 }, { t: 36 }, { t: 46 }, { t: 159 }, { t: 193 }],
+  },
+  {
+    q: 'What is the cost of the shoes?',
+    a: 'Based on the keyframe at 0:29, the price tag on the shoes reads 999/-.',
+    chips: [{ t: 29 }],
+  },
 ]
 
 function prefersReducedMotion() {
