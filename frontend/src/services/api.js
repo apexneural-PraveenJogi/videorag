@@ -1,7 +1,10 @@
 import axios from 'axios'
 
-// Same-origin: Vite proxies /api -> backend in dev; in prod they're served together.
-export const API_BASE = '/api/v1'
+// API base. Defaults to the same-origin '/api/v1' (Vite proxies it in dev, nginx
+// in a single-domain prod). Override with VITE_API_BASE_URL when the backend is
+// on a separate host (e.g. http://api.videorag.apexneural.cloud/api/v1). Vite
+// inlines this at BUILD time, so set it before `npm run build`.
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
 const AUTH_KEY = 'videorag_auth'
 

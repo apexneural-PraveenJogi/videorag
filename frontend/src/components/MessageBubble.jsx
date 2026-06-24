@@ -31,7 +31,9 @@ function relevantReferences(refs, text) {
   return matched.length ? matched : refs.slice(0, 1)
 }
 
-function renderText(text, onSeek) {
+// Inline: turn timecode mentions into clickable seek chips. `keyBase` keeps React
+// keys unique across the many segments a single answer is split into.
+function renderTimecodes(text, onSeek, keyBase) {
   const out = []
   let last = 0
   let m
@@ -41,7 +43,7 @@ function renderText(text, onSeek) {
     const label = m[1]
     out.push(
       <button
-        key={`${m.index}-${label}`}
+        key={`${keyBase}-${m.index}-${label}`}
         type="button"
         onClick={() => onSeek?.(toSeconds(label))}
         className="mx-0.5 rounded bg-amber-500/15 px-1.5 py-0.5 font-mono text-[0.8em] text-amber-600 transition hover:bg-amber-500/25"
@@ -53,6 +55,70 @@ function renderText(text, onSeek) {
   }
   if (last < text.length) out.push(text.slice(last))
   return out
+}
+
+const BOLD_RE = /\*\*([^*]+)\*\*/g
+
+// Inline rendering for one line: render **bold** as bold, timecodes as chips, and
+// strip any stray Markdown asterisks so the user never sees raw `*` symbols.
+function renderInline(text, onSeek, keyBase) {
+  const nodes = []
+  let seg = 0
+  let last = 0
+  let m
+  BOLD_RE.lastIndex = 0
+  const pushPlain = (s) => {
+    if (!s) return
+    const cleaned = s.replace(/\*+/g, '') // drop any leftover asterisks
+    if (cleaned) nodes.push(...renderTimecodes(cleaned, onSeek, `${keyBase}-p${seg++}`))
+  }
+  while ((m = BOLD_RE.exec(text)) !== null) {
+    pushPlain(text.slice(last, m.index))
+    nodes.push(
+      <strong key={`${keyBase}-b${seg++}`} className="font-semibold">
+        {renderTimecodes(m[1], onSeek, `${keyBase}-bi${seg}`)}
+      </strong>,
+    )
+    last = BOLD_RE.lastIndex
+  }
+  pushPlain(text.slice(last))
+  return nodes
+}
+
+// Block rendering: split the answer into paragraphs and bullet lists so it reads
+// as clean formatted text rather than a wall of Markdown symbols.
+function renderRich(text, onSeek) {
+  const lines = (text || '').split('\n')
+  const blocks = []
+  let bullets = null
+  const flush = (k) => {
+    if (bullets && bullets.length) {
+      blocks.push(
+        <ul key={`ul-${k}`} className="list-disc space-y-1 pl-5">
+          {bullets}
+        </ul>,
+      )
+    }
+    bullets = null
+  }
+  lines.forEach((line, i) => {
+    const bullet = line.match(/^\s*[-*•]\s+(.*)$/)
+    if (bullet) {
+      if (!bullets) bullets = []
+      bullets.push(<li key={`li-${i}`}>{renderInline(bullet[1], onSeek, `li-${i}`)}</li>)
+    } else if (line.trim() === '') {
+      flush(i)
+    } else {
+      flush(i)
+      blocks.push(
+        <p key={`p-${i}`} className="break-words">
+          {renderInline(line, onSeek, `p-${i}`)}
+        </p>,
+      )
+    }
+  })
+  flush('end')
+  return blocks
 }
 
 function TypingDots() {
@@ -85,18 +151,18 @@ export default function MessageBubble({ message, onSeek }) {
               : 'bg-ink-800 text-mist-100'
         }`}
       >
-        <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+        <div className="break-words text-sm leading-relaxed">
           {isUser ? (
-            message.text
+            <span className="whitespace-pre-wrap">{message.text}</span>
           ) : waiting ? (
             <TypingDots />
           ) : (
-            <>
-              {renderText(message.text, onSeek)}
+            <div className="space-y-2">
+              {renderRich(message.text, onSeek)}
               {message.streaming && (
                 <span className="ml-0.5 inline-block h-4 w-1.5 animate-blink bg-amber-500 align-middle" />
               )}
-            </>
+            </div>
           )}
         </div>
 
@@ -105,13 +171,6 @@ export default function MessageBubble({ message, onSeek }) {
             {shownRefs.map((ref, i) => (
               <FrameReference key={`${ref.frame_path}-${i}`} reference={ref} onSeek={onSeek} />
             ))}
-          </div>
-        )}
-
-        {!isUser && !message.streaming && !message.error && message.model && (
-          <div className="mt-2 font-mono text-[11px] text-mist-500">
-            {message.model}
-            {message.latencyMs ? ` · ${message.latencyMs} ms` : ''}
           </div>
         )}
       </div>

@@ -4,7 +4,8 @@ import { create } from 'zustand'
 // Each message: { id, role: 'user'|'assistant', text, references?, model?, latencyMs?, streaming?, error? }
 export const useChatStore = create((set, get) => ({
   byVideo: {}, // { [videoId]: Message[] }
-  model: '', // selected vision model id ('' => backend default)
+  // Locked to Gemini Flash — the model picker is not exposed in the UI.
+  model: 'google/gemini-3.5-flash',
 
   setModel: (model) => set({ model }),
 

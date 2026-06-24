@@ -57,8 +57,18 @@ def reset_video(video_id: str) -> None:
 
 
 def _collection(video_id: str):
+    settings = get_settings()
     return _client().get_or_create_collection(
-        name=_collection_name(video_id), metadata={"hnsw:space": "cosine"}
+        name=_collection_name(video_id),
+        metadata={
+            "hnsw:space": "cosine",
+            # High search_ef → near-exact recall on these small per-video
+            # collections; construction_ef + M keep graph quality up as videos
+            # get longer. See config.py for rationale.
+            "hnsw:search_ef": settings.chroma_hnsw_search_ef,
+            "hnsw:construction_ef": settings.chroma_hnsw_construction_ef,
+            "hnsw:M": settings.chroma_hnsw_m,
+        },
     )
 
 

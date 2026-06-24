@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useChatStore } from '../store/chatStore'
 import { streamAnswer } from '../services/queryService'
 import MessageBubble from './MessageBubble.jsx'
-import ModelSelector from './ModelSelector.jsx'
 
 let counter = 0
 const nextId = () => `m${Date.now()}-${counter++}`
@@ -69,12 +68,11 @@ export default function ChatPanel({ videoId, onSeek, title, posterFrame, frameCo
 
   return (
     <div className="flex h-full flex-col bg-ink-900">
-      <div className="flex items-center justify-between border-b border-ink-600 bg-ink-800 px-4 py-3">
+      <div className="flex items-center border-b border-ink-600 bg-ink-800 px-4 py-3">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-mist-100">
           <span className="h-2 w-2 rounded-full bg-amber-500" />
           Ask this video
         </h2>
-        <ModelSelector />
       </div>
 
       <div ref={scrollRef} className="scroll-slim flex-1 overflow-y-auto">

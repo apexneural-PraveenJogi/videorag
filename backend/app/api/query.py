@@ -43,7 +43,9 @@ def query(
     settings: Settings = Depends(settings_dep),
 ) -> QueryResponse:
     _ensure_ready(db, req.video_id, user)
-    model = req.model or settings.default_vision_model
+    # Locked to the single configured vision model (Gemini 3.5 Flash). Any model
+    # the client tries to supply is ignored — model choice is not user-selectable.
+    model = settings.default_vision_model
     session = chat_memory.session_id(user.id, req.video_id)
     started = time.perf_counter()
 
@@ -77,7 +79,8 @@ def query_stream(
 ):
     """Stream the answer as SSE: a `references` event, then `token` events, then `done`."""
     _ensure_ready(db, req.video_id, user)
-    model = req.model or settings.default_vision_model
+    # Locked to the single configured vision model (Gemini 3.5 Flash) — see /query.
+    model = settings.default_vision_model
     session = chat_memory.session_id(user.id, req.video_id)
 
     state = {

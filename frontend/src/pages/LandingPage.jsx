@@ -62,7 +62,7 @@ const ADVANTAGES = [
   { icon: PATHS.eye, t: 'Reads the picture', b: 'A vision model sees the actual frames — charts, faces, slides, scenery — not just the transcript.' },
   { icon: PATHS.clock, t: 'Answers carry timecode', b: 'Every claim links to the exact second it came from. Click it and the player jumps there.' },
   { icon: PATHS.stream, t: 'Streams as it thinks', b: 'Responses arrive token by token — read the opening line while the rest is still writing.' },
-  { icon: PATHS.layers, t: 'Your pick of model', b: 'Switch between GPT-4o, Gemini, Claude, and Qwen vision models from a single dropdown.' },
+  { icon: PATHS.layers, t: 'Powered by Gemini 3.5 Flash', b: 'Google’s Gemini 3.5 Flash vision model reads every keyframe — fast, accurate, multimodal understanding with no setup.' },
   { icon: PATHS.film, t: 'Frames you can scrub', b: 'Keyframe thumbnails and timecodes seek the player straight to the moment in question.' },
   { icon: PATHS.lock, t: 'Stays on your box', b: 'Footage, frames, and embeddings live on your machine. One API key powers the answers.' },
 ]
@@ -71,7 +71,7 @@ const ADVANTAGES = [
 const TICKER = [
   { title: 'Reading the picture and the transcript together', date: 'Jun 2026' },
   { title: 'Answers that carry the exact timecode', date: 'Jun 2026' },
-  { title: 'Switch between GPT-4o, Gemini, Claude & Qwen', date: 'May 2026' },
+  { title: 'Powered by Google Gemini 3.5 Flash vision', date: 'May 2026' },
   { title: 'Keyframes you can scrub to in one click', date: 'May 2026' },
   { title: 'Footage and embeddings stay on your box', date: 'Apr 2026' },
 ]

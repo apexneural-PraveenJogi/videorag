@@ -42,6 +42,19 @@ class Settings(BaseSettings):
     storage_dir: str = "./storage"  # local temp scratch for ingest only
     chroma_persist_dir: str = "./chroma_db"
 
+    # ChromaDB HNSW index tuning. Per-video collections are small (tens–hundreds
+    # of items), so a high search_ef makes retrieval effectively exact (near-100%
+    # recall) at negligible cost — the single biggest quality lever within Chroma.
+    # These apply to collections created after the change; re-index to upgrade
+    # existing ones. (Chroma defaults: search_ef=10, construction_ef=100, M=16.)
+    chroma_hnsw_search_ef: int = 200
+    chroma_hnsw_construction_ef: int = 200
+    chroma_hnsw_m: int = 32
+
+    # --- S3 backup of the Chroma store ---
+    # Object key prefix under aws_s3_bucket where chroma_db snapshots are stored.
+    chroma_backup_s3_prefix: str = "chroma-backups"
+
     # --- Database (Postgres) ---
     # e.g. postgresql+psycopg://user:pass@localhost:5432/videorag
     database_url: str = ""
@@ -112,24 +125,11 @@ class Settings(BaseSettings):
 
     @property
     def vision_models(self) -> list[dict]:
-        """Curated multimodal (vision) models offered in the frontend selector.
+        """The single vision model offered to the client.
 
-        All entries accept image input on OpenRouter. The default is listed first.
+        Model choice is not user-selectable: the app is locked to Gemini 3.5 Flash.
         """
-        catalog = [
-            {"id": "openai/gpt-4o-mini", "label": "GPT-4o mini (fast, cheap)"},
-            {"id": "openai/gpt-4o", "label": "GPT-4o"},
-            {"id": "google/gemini-3.5-flash", "label": "Gemini 3.5 Flash"},
-            {"id": "qwen/qwen2.5-vl-72b-instruct", "label": "Qwen2.5-VL 72B"},
-            {"id": "anthropic/claude-opus-4.8", "label": "Claude Opus 4.8"},
-        ]
-        # Ensure the configured default is present and first.
-        ids = [m["id"] for m in catalog]
-        if self.default_vision_model not in ids:
-            catalog.insert(0, {"id": self.default_vision_model, "label": self.default_vision_model})
-        else:
-            catalog.sort(key=lambda m: m["id"] != self.default_vision_model)
-        return catalog
+        return [{"id": self.default_vision_model, "label": "Gemini 3.5 Flash"}]
 
     @property
     def cors_origin_list(self) -> list[str]:
