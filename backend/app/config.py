@@ -29,7 +29,24 @@ class Settings(BaseSettings):
     # --- Video processing ---
     frame_extract_fps: float = 1.0
     frame_format: str = "jpg"  # jpg | png
-    whisper_model: str = "base"
+    whisper_model: str = "base"  # local faster-whisper model size (fallback backend)
+
+    # --- Transcription backend ---
+    # "openrouter": offload STT to OpenRouter (Groq-served Whisper). Audio is
+    # extracted with ffmpeg, split into fixed windows, and each window is
+    # transcribed in parallel. "local": use the bundled faster-whisper on CPU.
+    # OpenRouter mode falls back to local on ANY error (missing ffmpeg/key, HTTP
+    # error, empty result), so ingest still works offline.
+    transcribe_backend: str = "openrouter"  # "openrouter" | "local"
+    stt_model: str = "openai/whisper-large-v3-turbo"
+    # OpenRouter provider routing for STT (comma-separated provider names, highest
+    # priority first). Groq gives the fastest Whisper inference. Blank = let
+    # OpenRouter choose. allow_fallbacks stays on so a provider outage still routes.
+    stt_provider_order: str = "Groq"
+    # Audio is split into windows this many seconds long — one API call each.
+    # Keep under the ~60s OpenRouter upstream timeout. This is also the timestamp
+    # granularity, since the STT endpoint returns text only (no per-word times).
+    stt_chunk_seconds: int = 45
     max_video_size_mb: int = 5120  # 5 GB
     # Max number of heavy ingest jobs (frame extraction + whisper) running at once.
     ingest_concurrency: int = 2
