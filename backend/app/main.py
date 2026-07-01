@@ -39,7 +39,12 @@ app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
+    # Allow all origins. allow_credentials=True means we can't return a literal
+    # "*" (browsers reject that on credentialed requests), so we use a catch-all
+    # regex — Starlette then echoes back each request's Origin (e.g.
+    # https://videorag.apexneural.cloud), which is what browsers require.
     allow_origins=settings.cors_origin_list,
+    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
