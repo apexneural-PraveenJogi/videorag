@@ -31,6 +31,20 @@ _ingest_semaphore = threading.Semaphore(get_settings().ingest_concurrency)
 _TRANSIENT = (ConnectionError, TimeoutError, OSError)
 
 
+class IngestCancelled(Exception):
+    """Raised when the video row is deleted mid-ingest. Deleting the row is the
+    cancel signal; on this we stop all remaining work and clean up, without
+    marking the (now-gone) video as failed."""
+
+
+def _abort_if_deleted(video_id: str, stop: threading.Event) -> None:
+    """Cooperative cancellation checkpoint. Raises IngestCancelled if the video
+    was deleted, and latches ``stop`` so in-flight worker threads bail early."""
+    if stop.is_set() or not video_repo.exists(video_id):
+        stop.set()
+        raise IngestCancelled(video_id)
+
+
 def _overlapping_text(ts: float, te: float, segments: list[TranscriptSegment]) -> str:
     parts = [s.text for s in segments if s.start <= te and s.end >= ts]
     return " ".join(parts).strip()
@@ -38,15 +52,19 @@ def _overlapping_text(ts: float, te: float, segments: list[TranscriptSegment]) -
 
 def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> dict:
     settings = get_settings()
+    # Latched by _abort_if_deleted so in-flight upload/caption workers bail early.
+    stop = threading.Event()
 
     with tempfile.TemporaryDirectory(prefix=f"ingest_{video_id}_") as tmp:
         tmp_dir = Path(tmp)
         local_video = tmp_dir / filename
         frames_out = tmp_dir / "frames"
 
+        _abort_if_deleted(video_id, stop)
         video_repo.update_video(video_id, status="processing", progress=5, stage="Downloading")
         storage.download_to_file(video_key, local_video)
 
+        _abort_if_deleted(video_id, stop)
         video_repo.update_video(video_id, progress=15, stage="Extracting keyframes")
         t0 = time.perf_counter()
         extraction = extract_keyframes(
@@ -55,6 +73,7 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
         frames: list[ExtractedFrame] = extraction.frames
         logger.info("ingest[%s] extracted %d frames in %.1fs", video_id, len(frames), time.perf_counter() - t0)
 
+        _abort_if_deleted(video_id, stop)
         video_repo.update_video(
             video_id, progress=40, stage="Transcribing audio",
             frame_count=len(frames), duration=extraction.duration,
@@ -72,10 +91,13 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
 
         # Upload frames to S3 in parallel (progress 60 -> 73). Hundreds of small
         # PUTs are slow serially; fan them out and report as they land.
+        _abort_if_deleted(video_id, stop)
         video_repo.update_video(video_id, progress=60, stage=f"Uploading frames (0/{n})")
         frame_keys: list[str | None] = [None] * n
 
         def _upload(idx: int) -> None:
+            if stop.is_set():
+                return
             fr = frames[idx]
             key = storage.frame_key(owner_id, video_id, fr.path.name)
             storage.upload_file(fr.path, key, content_type="image/jpeg")
@@ -87,11 +109,13 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
             for _ in concurrent.futures.as_completed(futs):
                 done += 1
                 if done % 10 == 0 or done == n:
+                    _abort_if_deleted(video_id, stop)
                     video_repo.update_video(
                         video_id, progress=60 + int(13 * done / max(1, n)),
                         stage=f"Uploading frames ({done}/{n})",
                     )
 
+        _abort_if_deleted(video_id, stop)
         video_repo.update_video(video_id, progress=74, stage="Indexing in vector store")
         vector_store.reset_video(video_id)
 
@@ -115,6 +139,8 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
         captions: list[str] = [""] * n
 
         def _caption(idx: int) -> None:
+            if stop.is_set():
+                return
             fr = frames[idx]
             cap = _overlapping_text(fr.timestamp, fr.timestamp + frame_window, segments)
             if not cap and settings.enable_visual_captions:
@@ -131,6 +157,7 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
             for _ in concurrent.futures.as_completed(futs):
                 done += 1
                 if done % 5 == 0 or done == n:
+                    _abort_if_deleted(video_id, stop)
                     video_repo.update_video(
                         video_id, progress=75 + int(15 * done / max(1, n)),
                         stage=f"Captioning frames ({done}/{n})",
@@ -144,8 +171,17 @@ def run_ingest(video_id: str, owner_id: str, video_key: str, filename: str) -> d
                 "frame_path": frame_keys[i],
             })
 
+        _abort_if_deleted(video_id, stop)
         video_repo.update_video(video_id, progress=92, stage="Embedding & indexing")
         chunk_count = vector_store.index_items(video_id, ids, texts, metadatas)
+
+        # A delete that landed during indexing already ran vector_store.reset_video
+        # before our write, leaving the freshly-written vectors orphaned. Detect
+        # that here and clean them up.
+        if not video_repo.exists(video_id):
+            stop.set()
+            vector_store.reset_video(video_id)
+            raise IngestCancelled(video_id)
         video_repo.update_video(video_id, progress=98, stage="Finalizing")
 
     video_repo.update_video(
@@ -182,6 +218,9 @@ def ingest_safe(video_id: str, owner_id: str, video_key: str, filename: str) -> 
                     future = ex.submit(run_ingest, video_id, owner_id, video_key, filename)
                     future.result(timeout=settings.ingest_job_timeout_s)
                 logger.info("ingest[%s] ready in %.1fs", video_id, time.perf_counter() - started)
+                return
+            except IngestCancelled:
+                logger.info("ingest[%s] cancelled — video deleted; stopped remaining work", video_id)
                 return
             except concurrent.futures.TimeoutError:
                 logger.error("ingest[%s] exceeded %ds timeout", video_id, settings.ingest_job_timeout_s)

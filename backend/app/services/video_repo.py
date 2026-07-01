@@ -10,3 +10,10 @@ def update_video(video_id: str, **fields) -> None:
             return
         for key, value in fields.items():
             setattr(video, key, value)
+
+
+def exists(video_id: str) -> bool:
+    """Whether the video row still exists. Deleting the row is how a running
+    ingest is told to cancel, so this is the ingest's cancellation check."""
+    with session_scope() as db:
+        return db.get(Video, video_id) is not None

@@ -105,14 +105,17 @@ def get_video(video_id: str, db: Session = Depends(get_db), user: User = Depends
 @router.delete("/{video_id}")
 def delete_video(video_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> dict:
     video = _owned(db, video_id, user)
+    # Delete the row first: a running ingest polls the row's existence as its
+    # cancel signal, so this stops it before it can write more. The post-index
+    # guard in run_ingest cleans up any vectors written in the race window.
+    db.delete(video)
+    db.commit()
     try:
         storage.delete_prefix(storage.video_prefix(user.id, video_id))
         storage.delete_prefix(storage.frames_prefix(user.id, video_id))
     except Exception:  # noqa: BLE001 — best-effort cleanup
         pass
     vector_store.reset_video(video_id)
-    db.delete(video)
-    db.commit()
     return {"deleted": True}
 
 
